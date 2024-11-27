@@ -14,6 +14,8 @@ from pathlib import Path
 from decouple import config
 from django.core.management.utils import get_random_secret_key
 
+from easy_thumbnails.conf import Settings as thumbnail_settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "easy_thumbnails",
+    "image_cropping",
     "account.apps.AccountConfig",
 ]
 
@@ -139,3 +143,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "account.User"
 LOGIN_REDIRECT_URL = "/"
+
+
+# Image cropping settings
+
+THUMBNAIL_PROCESSORS = (
+    'image_cropping.thumbnail_processors.crop_corners',
+) + thumbnail_settings.THUMBNAIL_PROCESSORS
