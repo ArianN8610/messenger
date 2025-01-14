@@ -1,17 +1,22 @@
-# pull official base image
+# Pull official base image
 FROM python:3.12-slim
 
-# set environment variables
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# set work directory
+# Install Node.js
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Set work directory
 WORKDIR /app
 
-# install dependencies
+# Install dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt /app/
 RUN pip install -r requirements.txt
 
-# copy project
+# Copy project
 COPY ./core /app/
