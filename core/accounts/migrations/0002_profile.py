@@ -9,7 +9,7 @@ import image_cropping.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0001_initial'),
+        ('accounts', '0001_initial'),
     ]
 
     operations = [
