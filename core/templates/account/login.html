@@ -1,0 +1,58 @@
+{% extends 'account/base_auth.html' %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block form_title %}Sign In{% endblock %}
+
+{% block p_content %}
+    If you have not created an account yet, then please <a href="{% url 'account_signup' %}" class="link link-primary">sign up</a> first.
+{% endblock %}
+
+{% block menu %}{% endblock %}
+
+{% block form_content %}
+    <!-- Username field -->
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text font-bold">Username</span>
+        </div>
+        <input type="text" name="login" class="input input-bordered w-full" autocomplete="username" maxlength="150" required/>
+        {% if form.login.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.login.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+
+    <!-- Password field -->
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text font-bold">Password</span>
+            <a href="{% url 'account_reset_password' %}" class="link label-text-alt">Forgot your password?</a>
+        </div>
+        <input type="password" name="password" class="input input-bordered w-full" autocomplete="current-password" required/>
+        {% if form.password.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.password.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+
+    <!-- Remember field -->
+    <div class="form-control">
+        <label class="label cursor-pointer">
+            <span class="label-text">Remember me</span>
+            <input type="checkbox" name="remember" checked="checked" class="checkbox"/>
+        </label>
+    </div>
+{% endblock %}
+
+{% block btn_content %}Sign In{% endblock %}

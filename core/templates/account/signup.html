@@ -1,0 +1,83 @@
+{% extends 'account/base_auth.html' %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block form_title %}Sign Up{% endblock %}
+
+{% block p_content %}
+    Already have an account? Then please <a href="{% url 'account_login' %}" class="link link-primary">sign in</a>.
+{% endblock %}
+
+{% block menu %}{% endblock %}
+
+{% block form_content %}
+    <!-- Email field -->
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text font-bold">Email</span>
+        </div>
+        <input type="email" name="email" class="input input-bordered w-full" autocomplete="email" maxlength="320" required/>
+        {% if form.email.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.email.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+
+    <!-- Username field -->
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text font-bold">Username</span>
+        </div>
+        <input type="text" name="username" class="input input-bordered w-full" autocomplete="username" maxlength="150" required/>
+        {% if form.username.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.username.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+
+    <!-- Password1 field -->
+    <label class="form-control w-full">
+        <div class="label">
+            <span class="label-text font-bold">Password</span>
+        </div>
+        <input type="password" name="password1" class="input input-bordered w-full" autocomplete="new-password" required/>
+        {% if form.password1.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.password1.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+
+    <!-- Password2 field -->
+    <label class="form-control w-full mb-2">
+        <div class="label">
+            <span class="label-text font-bold">Password (again)</span>
+        </div>
+        <input type="password" name="password2" class="input input-bordered w-full" autocomplete="new-password" required/>
+        {% if form.password2.errors %}
+            <div class="label">
+                <ul class="label-text-alt">
+                    {% for error in form.password2.errors %}
+                        <li class="text-error">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </label>
+{% endblock %}
+
+{% block btn_content %}Sign Up{% endblock %}
