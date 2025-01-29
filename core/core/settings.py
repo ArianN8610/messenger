@@ -66,6 +66,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "accounts.middleware.LoginRequiredMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -163,6 +164,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/login/"  # allauth login url
+ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 
 # Image cropping settings
