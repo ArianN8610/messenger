@@ -2,31 +2,31 @@
 {% load socialaccount %}
 
 {% block body %}
-    <main class="min-h-screen flex justify-center items-center py-6">
+    <main class="min-h-screen flex flex-col justify-center items-center py-6 gap-3">
+        {% block menu %}
+            <div class="flex justify-center">
+                <ul class="menu bg-base-300 lg:menu-horizontal rounded-box gap-1">
+                    <li>
+                        <a href="{% url 'account_login' %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" /></svg>
+                            <span>Sign In</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'account_signup' %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" /></svg>
+                            <span>Sign Up</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        {% endblock %}
+
         <div class="card bg-base-200 w-96">
             <div class="card-body">
                 <h2 class="text-center text-3xl font-bold">{% block form_title %}{% endblock %}</h2>
                 <p>{% block p_content %}{% endblock %}</p>
                 <div class="divider"></div>
-            
-                {% block menu %}
-                    <div class="flex justify-center">
-                        <ul class="menu bg-base-100 lg:menu-horizontal rounded-box gap-2">
-                            <li>
-                                <a href="{% url 'account_login' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" /></svg>
-                                    <span>Sign In</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url 'account_signup' %}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" /></svg>
-                                    <span>Sign Up</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                {% endblock %}
 
                 {% block google_section %}
                 	<!-- Google login button -->
@@ -34,13 +34,12 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 48 48"><path fill="#ffc107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917"/><path fill="#ff3d00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691"/><path fill="#4caf50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.9 11.9 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44"/><path fill="#1976d2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917"/></svg>
                         <span>Sign In With Google</span>
                     </a>
+                    <div class="divider">OR</div>
                 {% endblock %}
 
                 {% block form_section %}
-                    <div class="divider">OR</div>
-
-                    <!-- Form errors -->
                     {% if form.non_field_errors %}
+                        <!-- Form errors -->
                         <div class="bg-error bg-opacity-10 text-center border-2 border-error rounded-box text-error p-2">
                             <ul>
                                 {% for error in form.non_field_errors %}
@@ -50,8 +49,8 @@
                         </div>
                     {% endif %}
 
-                    <!-- Login form -->
-                    <form method="post" class="flex flex-col gap-4">
+                    <!-- form -->
+                    <form method="post" class="flex flex-col gap-4" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% block form_content %}{% endblock %}
                         <button type="submit" class="btn btn-neutral">{% block btn_content %}{% endblock %}</button>

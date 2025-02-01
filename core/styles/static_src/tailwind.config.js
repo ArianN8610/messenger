@@ -41,6 +41,7 @@ module.exports = {
          */
         // '../../**/*.py'
     ],
+    safelist: ["file-input", "file-input-bordered", "textarea", "textarea-bordered"],
     theme: {
         extend: {},
     },

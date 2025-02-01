@@ -67,6 +67,7 @@ MIDDLEWARE = [
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "accounts.middleware.LoginRequiredMiddleware",
+    "accounts.middleware.ProfileCompletionMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"

@@ -21,8 +21,12 @@
 
 {% block google_section %}{% endblock %}
 
-{% if not confirmation or not can_confirm %}
-    {% block form_section %}{% endblock %}
-{% endif %}
-
-{% block btn_content %}Confirm{% endblock %}
+{% block form_section %}
+    {% if confirmation and can_confirm %}
+        <!-- Post form -->
+        <form method="post" class="flex flex-col gap-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-neutral">Confirm</button>
+        </form>
+    {% endif %}
+{% endblock %}

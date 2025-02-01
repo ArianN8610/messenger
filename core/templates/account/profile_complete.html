@@ -1,0 +1,19 @@
+{% extends 'account/base_auth.html' %}
+{% load general_tags %}
+
+{% block title %}Complete Profile{% endblock %}
+
+{% block form_title %}Complete Profile{% endblock %}
+
+{% block google_section %}{% endblock %}
+
+{% block menu %}{% endblock %}
+
+{% block form_content %}
+    {% get_input form.avatar %}
+    {% get_input form.first_name %}
+    {% get_input form.last_name %}
+    {% get_input form.bio %}
+{% endblock %}
+
+{% block btn_content %}Save{% endblock %}

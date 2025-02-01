@@ -1,0 +1,15 @@
+<label class="form-control w-full">
+    <div class="label">
+        <span class="label-text {% if field.field.required %}font-bold{% endif %}">{{ field.label }}</span>
+    </div>
+    {{ field }}
+    {% if field.errors %}
+        <div class="label">
+            <ul class="label-text-alt">
+                {% for error in field.errors %}
+                    <li class="text-error">{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</label>
