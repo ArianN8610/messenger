@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "accounts.apps.AccountsConfig",
+    "messenger.apps.MessengerConfig",
 ]
 
 SITE_ID = 1
