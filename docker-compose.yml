@@ -1,4 +1,12 @@
 services:
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+
   backend:
     build: .
     container_name: backend
@@ -12,6 +20,7 @@ services:
       - ./.env.dev
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:15
@@ -21,6 +30,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.dev.db
+    depends_on:
+      - redis
 
 volumes:
   postgres_data:
