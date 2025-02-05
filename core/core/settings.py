@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "django_htmx",
     "accounts.apps.AccountsConfig",
     "messenger.apps.MessengerConfig",
 ]
@@ -71,6 +72,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     "accounts.middleware.LoginRequiredMiddleware",
     "accounts.middleware.ProfileCompletionMiddleware",
 ]

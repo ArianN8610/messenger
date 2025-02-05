@@ -14,3 +14,4 @@ cryptography==44.0.0
 channels==4.2.0
 daphne==4.1.2
 whitenoise==6.8.2
+django-htmx==1.21.0
