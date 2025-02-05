@@ -8,7 +8,8 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         # Code executed on each request before the view (or next middleware) is called
-        if not request.user.is_authenticated and not request.path.startswith('/accounts/'):
+        if (not request.user.is_authenticated and not request.path.startswith('/accounts/') and
+                not request.path.startswith("/__reload__/")):
             return redirect('account_login')  # Redirect to login page
         return self.get_response(request)
 
