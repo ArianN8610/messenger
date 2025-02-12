@@ -43,7 +43,14 @@ module.exports = {
     ],
     safelist: ["file-input", "file-input-bordered", "textarea", "textarea-bordered"],
     theme: {
-        extend: {},
+        extend: {
+            height: {
+                "menu": "calc(100vh - 6rem)",
+            },
+            width: {
+                "lg": "32rem",
+            }
+        },
     },
     plugins: [
         /**
@@ -52,7 +59,6 @@ module.exports = {
          * comment the line below to disable '@tailwindcss/forms'.
          */
         require('daisyui'),
-        require('@tailwindcss/forms'),
         require('@tailwindcss/typography'),
         require('@tailwindcss/aspect-ratio'),
     ],

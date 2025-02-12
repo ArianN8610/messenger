@@ -10,7 +10,7 @@ services:
   backend:
     build: .
     container_name: backend
-    command: daphne -b 0.0.0.0 -p 8000 core.asgi:application
+    command: python manage.py runserver 0.0.0.0:8000
     restart: always
     volumes:
       - ./core:/app
@@ -28,6 +28,7 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Add script
     env_file:
       - ./.env.dev.db
     depends_on:
