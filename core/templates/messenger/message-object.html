@@ -20,7 +20,9 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="chat-bubble break-words">{{ message.content }}</div>
+            <div class="chat-bubble break-words">
+                <div dir="auto">{{ message.content|safe }}</div>
+            </div>
             <div class="chat-footer opacity-50">
                 {% if message.sender != chat.other_user.user and message.seen_at %}
                     Seen {{ message.seen_at|get_message_time_display }} -

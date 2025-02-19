@@ -47,15 +47,60 @@
                 </div>
 
                 <!-- Typing indicator -->
-                <div class="flex items-end gap-2">
+                <div class="flex items-end gap-2" x-data>
                     <div contenteditable="true" class="textarea textarea-bordered w-full overflow-y-auto max-h-48"
-                         placeholder="Type your message..." dir="auto"
-                         oninput="if(this.innerHTML.trim()==='<br>')this.innerHTML=''"></div>
-                    <button class="btn">
+                         placeholder="Type your message..." dir="auto" id="message-input" autofocus
+                         oninput="if(this.innerHTML.trim()==='<br>')this.innerHTML=''" x-ref="input"
+                         @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"></div>
+                    <button class="btn" id="send-button" x-ref="submit">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" /></svg>
                     </button>
                 </div>
             </div>
         </div>
     </main>
+
+    <script>
+        const chatId = "{{ chat.id }}";
+        const senderId = "{{ request.user.id }}";
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/private-chat/'
+            + chatId
+            + '/'
+        );
+
+        chatSocket.addEventListener('message', e => {
+            const data = JSON.parse(e.data);
+            const chatBox = document.getElementById("messages-box");
+
+            chatBox.innerHTML += `
+                <div class="chat ${data.sender_id === senderId ? 'chat-end' : 'chat-start'}">
+                    <div class="chat-bubble break-words">
+                        <div dir="auto">${data.message}</div>
+                    </div>
+                    <div class="chat-footer opacity-50">${data.sent_at}</div>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the last message
+        });
+
+        chatSocket.addEventListener('close', e => {
+            console.error('Chat socket closed unexpectedly');
+        });
+
+        document.getElementById('send-button').addEventListener('click', e => {
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.innerHTML.trim();
+
+            if (message) {
+                chatSocket.send(JSON.stringify({
+                    "message": message,
+                    "sender_id": senderId
+                }));
+                messageInput.innerHTML = "";
+            }
+        });
+    </script>
 {% endblock %}

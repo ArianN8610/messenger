@@ -7,6 +7,9 @@ register = template.Library()
 @register.filter
 def get_last_message_time_display(message_time):
     """Improve the last message time structure to display"""
+    if not message_time:
+        return message_time
+
     today = datetime.today()
     yesterday = (today - timedelta(days=1)).date()
 

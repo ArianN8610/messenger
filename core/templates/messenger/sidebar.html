@@ -16,7 +16,7 @@
                                 {% if chat.get_last_message.seen_at %}
                                     Seen at
                                     {{ chat.get_last_message.seen_at|get_last_message_time_display }}
-                                {% else %}
+                                {% elif chat.get_last_message.sent_at %}
                                     Sent at
                                     {{ chat.get_last_message.sent_at|get_last_message_time_display }}
                                 {% endif %}
@@ -27,7 +27,7 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <div class="text-sm opacity-50 break-all line-clamp-1">
-                            {{ chat.get_last_message.content|slice:100 }}
+                            {{ chat.get_last_message.content|slice:100|safe }}
                         </div>
                         {% if chat.unread_messages %}
                             <span class="badge badge-primary">{{ chat.unread_messages }}</span>
