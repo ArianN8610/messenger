@@ -38,6 +38,11 @@ class PrivateChatView(ListView):
     model = models.Message
     template_name = 'messenger/private-chat.html'
     context_object_name = 'messages'
+    paginate_by = 20
+
+    def get_template_names(self):
+        """For infinite scrolling"""
+        return 'messenger/message-object.html' if self.request.htmx else self.template_name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -55,4 +60,12 @@ class PrivateChatView(ListView):
         return context | {'chats': chats, 'chat': chat}
 
     def get_queryset(self):
-        return self.model.objects.filter(chat=self.kwargs['chat_id']).order_by("sent_at")
+        messages = self.model.objects.filter(chat=self.kwargs['chat_id']).order_by("-sent_at")
+
+        # Add "new_day" field to specify the start of a new day
+        prev_date = None
+        for message in reversed(messages):
+            message.new_day = prev_date != message.sent_at.date()
+            prev_date = message.sent_at.date()
+
+        return messages

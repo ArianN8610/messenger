@@ -1,0 +1,36 @@
+{% load humanize messenger_tags %}
+
+{% if messages %}
+    {% for message in messages reversed %}
+        {% if message.new_day %}
+            <!-- Chat date -->
+            <span class="badge badge-outline mx-auto block">{{ message.sent_at|naturalday }}</span>
+        {% endif %}
+
+        <!-- Message -->
+        <div {% if forloop.first %}
+                hx-trigger="revealed" hx-swap="beforebegin"
+                hx-get="{% url 'messenger:private-chat' chat_id=chat.id %}?page={{ page_obj.number|add:1 }}"
+            {% endif %}
+             class="chat {% if message.sender == chat.other_user.user %}chat-start{% else %}chat-end{% endif %}">
+            {% if message.edited_at %}
+                <div class="chat-header {% if message.sender == chat.other_user.user %}pl-2{% else %}pr-2{% endif %}">
+                    <div class="text-xs opacity-50">
+                        Edited {{ message.edited_at|get_message_time_display }}
+                    </div>
+                </div>
+            {% endif %}
+            <div class="chat-bubble break-words">{{ message.content }}</div>
+            <div class="chat-footer opacity-50">
+                {% if message.sender != chat.other_user.user and message.seen_at %}
+                    Seen {{ message.seen_at|get_message_time_display }} -
+                {% endif %}
+                {{ message.sent_at|date:'H:i' }}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <span class="badge badge-lg badge-ghost absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        No messages here yet...
+    </span>
+{% endif %}

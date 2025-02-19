@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static cropping general_tags messenger_tags humanize %}
+{% load static cropping general_tags humanize %}
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/private-chat.css' %}">
@@ -43,53 +43,7 @@
                 <!-- Messages box -->
                 <div id="messages-box" class="border-2 py-2 px-4 h-full rounded-box overflow-y-auto relative"
                      x-init="$el.scrollTop = $el.scrollHeight">  <!-- To scroll to the bottom -->
-                    {% if messages %}
-                        {% for message in messages %}
-                            {% ifchanged message.sent_at|date:'d m Y' %}
-                                <!-- Chat date -->
-                                <span class="badge badge-outline mx-auto block">{{ message.sent_at|naturalday }}</span>
-                            {% endifchanged %}
-
-                            <!-- Message -->
-                            {% if message.sender == chat.other_user.user %}
-                                <div class="chat chat-start">
-                                    {% if message.edited_at %}
-                                        <div class="chat-header pl-2">
-                                            <div class="text-xs opacity-50">
-                                                Edited {{ message.edited_at|get_message_time_display }}
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                    <div class="chat-bubble break-words">{{ message.content }}</div>
-                                    <div class="chat-footer opacity-50">
-                                        {{ message.sent_at|date:'H:i' }}
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="chat chat-end">
-                                    {% if message.edited_at %}
-                                        <div class="chat-header pr-2">
-                                            <div class="text-xs opacity-50">
-                                                Edited {{ message.edited_at|get_message_time_display }}
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                    <div class="chat-bubble break-words">{{ message.content }}</div>
-                                    <div class="chat-footer opacity-50">
-                                        {% if message.seen_at %}
-                                            Seen {{ message.seen_at|get_message_time_display }}
-                                        {% else %}
-                                            {{ message.sent_at|date:'H:i' }}
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        <span class="badge badge-lg badge-ghost absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            No messages here yet...
-                        </span>
-                    {% endif %}
+                    {% include 'messenger/message-object.html' with chats=chats chat=chat %}
                 </div>
 
                 <!-- Typing indicator -->
