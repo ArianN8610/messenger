@@ -2,6 +2,7 @@ import re
 import json
 import html
 
+import bleach
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -36,6 +37,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # If the message is empty after removing the spaces, don't send it!
         if not message:
             return
+        message = bleach.clean(message, tags=['br'], strip=True)
 
         chat = await sync_to_async(PrivateChat.objects.get)(id=self.chat_id)
         sender = await sync_to_async(User.objects.get)(id=sender_id)

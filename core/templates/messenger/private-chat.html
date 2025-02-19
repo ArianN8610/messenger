@@ -61,6 +61,16 @@
     </main>
 
     <script>
+        const messageInput = document.getElementById("message-input");
+
+        messageInput.addEventListener("paste", function (e) {
+            e.preventDefault(); // Prevent direct pasting with format
+
+            // Get plain text from the clipboard and paste it without formatting
+            let text = (e.clipboardData || window.clipboardData).getData("text/plain");
+            document.execCommand("insertText", false, text);
+        });
+
         const chatId = "{{ chat.id }}";
         const senderId = "{{ request.user.id }}";
         const chatSocket = new WebSocket(
