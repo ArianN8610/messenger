@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "django_htmx",
+    "django.contrib.humanize",
     "django.contrib.postgres",
     "accounts.apps.AccountsConfig",
     "messenger.apps.MessengerConfig",

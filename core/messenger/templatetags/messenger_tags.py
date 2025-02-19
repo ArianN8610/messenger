@@ -5,8 +5,8 @@ register = template.Library()
 
 
 @register.filter
-def get_message_time_display(message_time):
-    """Improve the message time structure to display"""
+def get_last_message_time_display(message_time):
+    """Improve the last message time structure to display"""
     today = datetime.today()
     yesterday = (today - timedelta(days=1)).date()
 
@@ -16,3 +16,21 @@ def get_message_time_display(message_time):
         return "yesterday"
     else:
         return message_time.strftime("%m/%d/%Y")
+
+
+@register.filter
+def get_message_time_display(message_datetime):
+    """Improve the message time structure to display"""
+    today = datetime.today()
+    yesterday = (today - timedelta(days=1)).date()
+    message_time = message_datetime.strftime("%H:%M")
+    time_result = ""
+
+    if message_datetime.date() == today.date():
+        time_result = f"{message_time}"
+    elif message_datetime.date() == yesterday:
+        time_result = f"yesterday {message_time}"
+    elif message_datetime.isocalendar()[:2] == today.isocalendar()[:2]:
+        time_result = f"{message_datetime.strftime('%a')} {message_time}"
+
+    return time_result

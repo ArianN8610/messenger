@@ -1,0 +1,13 @@
+{% load cropping %}
+
+<div class="avatar {% if not user.avatar %}placeholder{% endif %}">
+    {% if user.avatar %}
+        <div class="mask mask-squircle size-12 {{ avatar_styles }}">
+            <img src="{% cropped_thumbnail user "cropping" scale=1 %}" alt="{{ user.get_full_name }}-avatar"/>
+        </div>
+    {% else %}
+        <div class="bg-success text-white size-12 mask mask-squircle {{ avatar_styles }}">
+            <span class="text-lg">{{ user.get_user_avatar_text }}</span>
+        </div>
+    {% endif %}
+</div>

@@ -46,6 +46,7 @@ module.exports = {
         extend: {
             height: {
                 "menu": "calc(100vh - 6rem)",
+                "chat": "calc(100vh - 1rem)",
             },
             width: {
                 "lg": "32rem",

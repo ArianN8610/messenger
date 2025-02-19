@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static cropping general_tags messenger_tags humanize %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/private-chat.css' %}">
+{% endblock %}
+
+{% block body %}
+	<main class="min-h-screen w-full">
+        <div class="flex w-full relative h-full">
+            <!-- Sidebar -->
+            <ul class="menu bg-base-200 rounded-box flex-[2] overflow-y-auto m-2 mr-0 h-chat flex-nowrap hidden lg:flex">
+                {% include 'messenger/sidebar.html' with chats=chats chat_id=chat.id %}
+                {% if not chats %}
+                    <div>f</div>
+                {% endif %}
+            </ul>
+
+            <!-- Chat section -->
+            <div class="flex flex-col flex-[5] h-chat m-2 gap-2">
+                <!-- Navbar -->
+                <div class="flex items-center bg-base-300 py-2 px-3 rounded-box gap-2">
+                    <a href="/" class="block lg:hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
+                    </a>
+                    <!-- User avatar -->
+                    <div class="flex lg:hidden">
+                        {% get_user_avatar chat.other_user '!size-10' %}
+                    </div>
+                    <!-- User full name and last seen -->
+                    <div class="flex flex-col">
+                        <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
+                        <div class="text-xs opacity-50">
+                            {% if chat.other_user.last_seen %}
+                                Last seen {{ chat.other_user.last_seen|naturaltime }}
+                            {% else %}
+                                Last seen a long time ago
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages box -->
+                <div id="messages-box" class="border-2 py-2 px-4 h-full rounded-box overflow-y-auto relative"
+                     x-init="$el.scrollTop = $el.scrollHeight">  <!-- To scroll to the bottom -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            {% ifchanged message.sent_at|date:'d m Y' %}
+                                <!-- Chat date -->
+                                <span class="badge badge-outline mx-auto block">{{ message.sent_at|naturalday }}</span>
+                            {% endifchanged %}
+
+                            <!-- Message -->
+                            {% if message.sender == chat.other_user.user %}
+                                <div class="chat chat-start">
+                                    {% if message.edited_at %}
+                                        <div class="chat-header pl-2">
+                                            <div class="text-xs opacity-50">
+                                                Edited {{ message.edited_at|get_message_time_display }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="chat-bubble break-words">{{ message.content }}</div>
+                                    <div class="chat-footer opacity-50">
+                                        {{ message.sent_at|date:'H:i' }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="chat chat-end">
+                                    {% if message.edited_at %}
+                                        <div class="chat-header pr-2">
+                                            <div class="text-xs opacity-50">
+                                                Edited {{ message.edited_at|get_message_time_display }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="chat-bubble break-words">{{ message.content }}</div>
+                                    <div class="chat-footer opacity-50">
+                                        {% if message.seen_at %}
+                                            Seen {{ message.seen_at|get_message_time_display }}
+                                        {% else %}
+                                            {{ message.sent_at|date:'H:i' }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="badge badge-lg badge-ghost absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            No messages here yet...
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Typing indicator -->
+                <div class="flex items-end gap-2">
+                    <div contenteditable="true" class="textarea textarea-bordered w-full overflow-y-auto max-h-48"
+                         placeholder="Type your message..." dir="auto"
+                         oninput="if(this.innerHTML.trim()==='<br>')this.innerHTML=''"></div>
+                    <button class="btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

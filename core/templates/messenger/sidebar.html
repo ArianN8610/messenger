@@ -1,0 +1,40 @@
+{% load cropping general_tags messenger_tags %}
+
+{% if chats %}
+    {% for chat in chats %}
+        {% if not forloop.first %}
+            <div class="divider m-0"></div>
+        {% endif %}
+        <li><a href="{{ chat.get_absolute_url }}" class="px-2 inline {% if chat_id and chat_id == chat.id %}bg-primary-content{% endif %}">
+            <div class="flex items-center gap-3">
+                {% get_user_avatar chat.other_user %}
+                <div class="flex flex-col w-full gap-1">
+                    <div class="flex justify-between items-center">
+                        <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
+                        <div class="opacity-50">
+                            {% if chat.other_user != chat.get_last_message.sender.profile %}
+                                {% if chat.get_last_message.seen_at %}
+                                    Seen at
+                                    {{ chat.get_last_message.seen_at|get_last_message_time_display }}
+                                {% else %}
+                                    Sent at
+                                    {{ chat.get_last_message.sent_at|get_last_message_time_display }}
+                                {% endif %}
+                            {% else %}
+                                {{ chat.get_last_message.sent_at|get_last_message_time_display }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm opacity-50 break-all line-clamp-1">
+                            {{ chat.get_last_message.content|slice:100 }}
+                        </div>
+                        {% if chat.unread_messages %}
+                            <span class="badge badge-primary">{{ chat.unread_messages }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </a></li>
+    {% endfor %}
+{% endif %}

@@ -1,4 +1,5 @@
 from django.db import models
+from django.shortcuts import reverse
 from django.db.models.functions import Concat
 from django.contrib.postgres.search import TrigramSimilarity
 
@@ -87,6 +88,13 @@ class PrivateChat(models.Model):
     def __str__(self):
         return f'{self.user1.username} & {self.user2.username}'
 
+    def get_absolute_url(self):
+        return reverse('messenger:private-chat', kwargs={'chat_id': self.pk})
+
+    def count_unread_messages(self, current_user):
+        other_user = self.get_other_user(current_user)
+        return self.messages.all().filter(sender=other_user, seen_at__isnull=True).count()  # Get all unread messages
+
     def get_other_user(self, current_user):
         """Check who the current user is in this chat and return the other user"""
         return self.user2 if self.user1 == current_user else self.user1
@@ -104,7 +112,7 @@ class Message(models.Model):
 
     seen_at = models.DateTimeField(blank=True, null=True)
     sent_at = models.DateTimeField(auto_now_add=True)
-    edited_at = models.DateTimeField(auto_now=True)
+    edited_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.sender.username} -> ({self.chat.__str__()})'

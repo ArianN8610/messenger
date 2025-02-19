@@ -2,9 +2,9 @@
 {% load cropping messenger_tags %}
 
 {% block body %}
-	<main class="min-h-screen flex flex-col items-center py-4 gap-4">
-        <form method="get">
-            <label class="input input-bordered flex items-center gap-2 w-72 sm:w-lg">
+	<main class="min-h-screen flex flex-col items-center p-4 gap-4">
+        <form method="get" class="flex justify-center w-full">
+            <label class="input input-bordered flex items-center gap-2 w-full sm:w-lg">
                 <input type="text" name="q" class="grow" placeholder="Search" autofocus value="{{ request.GET.q }}"
                        onfocus="let temp_value=this.value; this.value=''; this.value=temp_value"/>  <!-- To put cursor at end -->
                 <button type="submit">
@@ -12,41 +12,9 @@
                 </button>
             </label>
         </form>
-        <ul class="menu bg-base-200 rounded-box w-72 sm:w-lg h-menu flex-nowrap overflow-y-auto">
+        <ul class="menu bg-base-200 rounded-box w-full sm:w-lg h-menu flex-nowrap overflow-y-auto">
             {% if chats or global_search_results %}
-                {% if chats %}
-                    {% for chat in chats %}
-                        {% if not forloop.first %}
-                            <div class="divider m-0"></div>
-                        {% endif %}
-                        <li><a class="px-2 inline">
-                            <div class="flex items-center gap-3">
-                                <div class="avatar">
-                                    <div class="mask mask-squircle h-12 w-12">
-                                        <img src="{% cropped_thumbnail chat.other_user "cropping" scale=1 %}" alt="{{ chat.other_user.get_full_name }}-avatar"/>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col w-full gap-1">
-                                    <div class="flex justify-between items-center">
-                                        <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
-                                        <div class="opacity-50">
-                                            {% if chat.other_user != chat.get_last_message.sender.profile %}
-                                                {% if chat.get_last_message.seen_at %}
-                                                    Seen at {{ chat.get_last_message.seen_at|get_message_time_display }}
-                                                {% else %}
-                                                    Sent at {{ chat.get_last_message.sent_at|get_message_time_display }}
-                                                {% endif %}
-                                            {% else %}
-                                                {{ chat.get_last_message.sent_at|get_message_time_display }}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="text-sm opacity-50 break-all line-clamp-1">{{ chat.get_last_message.content|slice:100 }}</div>
-                                </div>
-                            </div>
-                        </a></li>
-                    {% endfor %}
-                {% endif %}
+                {% include 'messenger/sidebar.html' with chats=chats %}
                 {% if global_search_results %}
                     <div class="divider">Global search results</div>
                     {% for user in global_search_results %}

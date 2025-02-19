@@ -23,9 +23,13 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(max_length=100, blank=True)
+    last_seen = models.DateTimeField(blank=True, null=True)
 
     def get_full_name(self):
         return f'{self.first_name} {self.last_name}'.strip()
+
+    def get_user_avatar_text(self):
+        return self.first_name[:1] + self.last_name[:1]
 
     def __str__(self):
         return self.get_full_name()
