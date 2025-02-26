@@ -17,3 +17,4 @@ whitenoise==6.8.2
 django-htmx==1.21.0
 channels-redis==4.2.1
 bleach== 6.2.0
+beautifulsoup4==4.13.3

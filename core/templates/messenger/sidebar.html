@@ -27,7 +27,7 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <div class="text-sm opacity-50 break-all line-clamp-1">
-                            {{ chat.get_last_message.content|slice:100|safe }}
+                            {{ chat.get_last_message.content|strip_tags|slice:100 }}
                         </div>
                         {% if chat.unread_messages %}
                             <span class="badge badge-primary">{{ chat.unread_messages }}</span>
