@@ -3,6 +3,8 @@
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/private-chat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ckeditor.css' %}">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.2.1/ckeditor5.css" crossorigin>
 {% endblock %}
 
 {% block body %}
@@ -48,10 +50,13 @@
 
                 <!-- Typing indicator -->
                 <div class="flex items-end gap-2" x-data>
-                    <div contenteditable="true" class="textarea textarea-bordered w-full overflow-y-auto max-h-48"
-                         placeholder="Type your message..." dir="auto" id="message-input" autofocus
-                         oninput="if(this.innerHTML.trim()==='<br>')this.innerHTML=''" x-ref="input"
-                         @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"></div>
+                    <div class="w-full" id="editor-container">
+                        <div class="w-full">
+                            <div @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"
+                                 class="max-h-48 !textarea !textarea-bordered break-words !py-0"
+                                 id="editor" x-ref="input"></div>
+                        </div>
+                    </div>
                     <button class="btn" id="send-button" x-ref="submit">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" /></svg>
                     </button>
@@ -60,17 +65,15 @@
         </div>
     </main>
 
+    <script src="https://cdn.ckeditor.com/ckeditor5/44.2.1/ckeditor5.umd.js" crossorigin></script>
     <script>
-        const messageInput = document.getElementById("message-input");
+        const ckeditor_license_key = "{{ ckeditor_license_key }}";  // Send context variable to JS
+    </script>
+    <script src="{% static 'js/ckeditor.js' %}"></script>
+    <script>
+        // Websockets
 
-        messageInput.addEventListener("paste", function (e) {
-            e.preventDefault(); // Prevent direct pasting with format
-
-            // Get plain text from the clipboard and paste it without formatting
-            let text = (e.clipboardData || window.clipboardData).getData("text/plain");
-            document.execCommand("insertText", false, text);
-        });
-
+        const messageInput = document.getElementById("editor");
         const chatId = "{{ chat.id }}";
         const senderId = "{{ request.user.id }}";
         const chatSocket = new WebSocket(
@@ -101,15 +104,13 @@
         });
 
         document.getElementById('send-button').addEventListener('click', e => {
-            const messageInput = document.getElementById("message-input");
-            const message = messageInput.innerHTML.trim();
-
+            const message = ckeditor_instance.getData().trim();
             if (message) {
                 chatSocket.send(JSON.stringify({
                     "message": message,
                     "sender_id": senderId
                 }));
-                messageInput.innerHTML = "";
+                ckeditor_instance.setData("");
             }
         });
     </script>

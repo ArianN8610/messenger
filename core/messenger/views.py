@@ -3,6 +3,8 @@ from django.shortcuts import get_object_or_404
 
 from . import models
 
+from decouple import config
+
 
 class IndexView(ListView):
     model = models.PrivateChat
@@ -57,7 +59,10 @@ class PrivateChatView(ListView):
         chat = get_object_or_404(models.PrivateChat, id=self.kwargs['chat_id'])
         chat.other_user = chat.get_other_user(self.request.user).profile
 
-        return context | {'chats': chats, 'chat': chat}
+        # CKEditor env
+        ckeditor_license_key = config("CKEDITOR_LICENSE_KEY")
+
+        return context | {'chats': chats, 'chat': chat, 'ckeditor_license_key': ckeditor_license_key}
 
     def get_queryset(self):
         messages = self.model.objects.filter(chat=self.kwargs['chat_id']).order_by("-sent_at")

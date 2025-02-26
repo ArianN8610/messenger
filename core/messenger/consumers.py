@@ -3,11 +3,34 @@ import json
 import html
 
 import bleach
+from bleach.linkifier import Linker
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from accounts.models import User
 from .models import Message, PrivateChat
+
+
+def add_custom_attrs(tag, name, value):
+    """
+    Add custom attributes to <a> tags in bleach
+    """
+    if name == 'href':
+        return value  # Keep the href attribute
+    elif name == 'target':
+        return '_blank'  # Open links in a new tab
+    elif name == 'rel':
+        return 'noopener noreferrer'  # Security best practice
+
+    return None  # Remove all other attributes
+
+
+def set_class(attrs, new=False):
+    """
+    Set class attribute for <a> tags
+    """
+    attrs[(None, 'class')] = 'link link-primary'
+    return attrs
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -31,13 +54,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_id = data['sender_id']
 
         # Convert HTML entities like &nbsp; to real spaces
-        message = html.unescape(message)
-        # Remove extra `<br>` from the beginning and end
-        message = re.sub(r'^(<br>\s*)+|(<br>\s*)+$', '', message, flags=re.IGNORECASE).strip()
+        message = html.unescape(message).strip()
+
+        # Clean content with bleach
+        message = bleach.clean(
+            message,
+            tags=['br', 'p', 'a', 'i', 'strong', 'u', 's', 'sub', 'sup'],
+            attributes={'a': add_custom_attrs},
+            strip=True
+        )
+
+        # Convert plain URLs to clickable links and add attributes
+        linker = Linker(callbacks=[set_class])
+        message = linker.linkify(message)
+
         # If the message is empty after removing the spaces, don't send it!
         if not message:
             return
-        message = bleach.clean(message, tags=['br'], strip=True)
 
         chat = await sync_to_async(PrivateChat.objects.get)(id=self.chat_id)
         sender = await sync_to_async(User.objects.get)(id=sender_id)
