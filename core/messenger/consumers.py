@@ -1,8 +1,8 @@
-import re
 import json
 import html
 
 import bleach
+from django.db.models import Q
 from bleach.linkifier import Linker
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -12,9 +12,7 @@ from .models import Message, PrivateChat
 
 
 def add_custom_attrs(tag, name, value):
-    """
-    Add custom attributes to <a> tags in bleach
-    """
+    """Add custom attributes to <a> tags in bleach"""
     if name == 'href':
         return value  # Keep the href attribute
     elif name == 'target':
@@ -26,9 +24,7 @@ def add_custom_attrs(tag, name, value):
 
 
 def set_class(attrs, new=False):
-    """
-    Set class attribute for <a> tags
-    """
+    """Set class attribute for <a> tags"""
     attrs[(None, 'class')] = 'link link-primary'
     return attrs
 
@@ -91,6 +87,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
+        # Send message to update the sender and recipient chats
+        await self.channel_layer.group_send(
+            f"user_{sender.id}_chats",
+            {"type": "update_chat_list"}
+        )
+
+        other_user = await sync_to_async(chat.get_other_user)(sender)
+        await self.channel_layer.group_send(
+            f"user_{other_user.id}_chats",
+            {"type": "update_chat_list"}
+        )
+
     async def chat_message(self, event):
         """Send message to all connected users"""
         await self.send(text_data=json.dumps({
@@ -98,3 +106,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'sender_id': event['sender_id'],
             'sent_at': event['sent_at'],
         }))
+
+
+class ChatListConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        """When the user connects, add them to a specific group"""
+        self.user = self.scope["user"]
+
+        if self.user.is_anonymous:
+            await self.close()
+        else:
+            self.group_name = f"user_{self.user.id}_chats"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            await self.accept()
+
+    async def disconnect(self, close_code):
+        """When the user leaves, remove them from the group"""
+        if self.user.is_authenticated:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def update_chat_list(self, event):
+        """Sending useless value just to activate websocket"""
+        await self.send(text_data=json.dumps({'status': 'ping'}))

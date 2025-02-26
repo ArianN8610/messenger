@@ -28,10 +28,7 @@ class IndexView(ListView):
         if q := self.request.GET.get('q'):
             chats = self.model.objects.search(user, q)
 
-        # Get other user for each chat
-        for chat in chats:
-            chat.other_user = chat.get_other_user(user).profile
-            chat.unread_messages = chat.count_unread_messages(self.request.user)
+        self.model.update_chat_values(chats, self.request.user)
 
         return chats
 
@@ -48,16 +45,14 @@ class PrivateChatView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        current_user = self.request.user
 
-        chats = models.PrivateChat.objects.for_user(self.request.user)
-        # Get other user and unread_messages for each chat
-        for chat in chats:
-            chat.other_user = chat.get_other_user(self.request.user).profile
-            chat.unread_messages = chat.count_unread_messages(self.request.user)
+        chats = models.PrivateChat.objects.for_user(current_user)
+        models.PrivateChat.update_chat_values(chats, current_user)
 
         # Get current chat
         chat = get_object_or_404(models.PrivateChat, id=self.kwargs['chat_id'])
-        chat.other_user = chat.get_other_user(self.request.user).profile
+        chat.other_user = chat.get_other_user(current_user).profile
 
         # CKEditor env
         ckeditor_license_key = config("CKEDITOR_LICENSE_KEY")
@@ -74,3 +69,28 @@ class PrivateChatView(ListView):
             prev_date = message.sent_at.date()
 
         return messages
+
+
+class ChatListView(ListView):
+    model = models.PrivateChat
+    template_name = 'messenger/sidebar.html'
+    context_object_name = 'chats'
+
+    def get_queryset(self):
+        user = self.request.user
+        chats = self.model.objects.for_user(user)
+
+        # Search result
+        if q := self.request.GET.get('q'):
+            chats = self.model.objects.search(user, q)
+
+        self.model.update_chat_values(chats, user)
+        return chats
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        chat_id = self.request.GET.get('chat-id')
+        context['chat_id'] = int(chat_id) if chat_id else chat_id
+
+        return context

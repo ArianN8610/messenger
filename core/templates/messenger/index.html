@@ -12,7 +12,9 @@
                 </button>
             </label>
         </form>
-        <ul class="menu bg-base-200 rounded-box w-full sm:w-lg h-menu flex-nowrap overflow-y-auto">
+        <ul class="menu bg-base-200 rounded-box w-full sm:w-lg h-menu flex-nowrap overflow-y-auto"
+            id="chat-list" hx-get="{% url 'messenger:chat-list' %}?q={{ request.GET.q }}"
+            hx-trigger="updateChatList from:body" hx-target="#chat-list" hx-swap="innerHTML">
             {% if chats or global_search_results %}
                 {% include 'messenger/sidebar.html' with chats=chats %}
                 {% if global_search_results %}
@@ -44,4 +46,18 @@
             {% endif %}
         </ul>
     </main>
+
+    <script>
+        // Websockets
+
+        const chatListSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat-list/'
+        );
+
+        chatListSocket.addEventListener('message', e => {
+            document.body.dispatchEvent(new Event("updateChatList"));
+        });
+    </script>
 {% endblock %}

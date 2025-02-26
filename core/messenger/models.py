@@ -102,6 +102,13 @@ class PrivateChat(models.Model):
     def get_last_message(self):
         return self.messages.all().order_by('-sent_at').first()
 
+    @staticmethod
+    def update_chat_values(chats, current_user):
+        """Add other user and unread messages for each chat"""
+        for chat in chats:
+            chat.other_user = chat.get_other_user(current_user).profile
+            chat.unread_messages = chat.count_unread_messages(current_user)
+
 
 class Message(models.Model):
     sender = models.ForeignKey('accounts.User', related_name='messages', on_delete=models.SET_NULL, null=True)

@@ -11,11 +11,10 @@
 	<main class="min-h-screen w-full">
         <div class="flex w-full relative h-full">
             <!-- Sidebar -->
-            <ul class="menu bg-base-200 rounded-box flex-[2] overflow-y-auto m-2 mr-0 h-chat flex-nowrap hidden lg:flex">
+            <ul class="menu bg-base-200 rounded-box flex-[2] overflow-y-auto m-2 mr-0 h-chat flex-nowrap hidden lg:flex"
+                id="chat-list" hx-get="{% url 'messenger:chat-list' %}?chat-id={{ chat.id }}"
+                hx-trigger="updateChatList from:body" hx-target="#chat-list" hx-swap="innerHTML">
                 {% include 'messenger/sidebar.html' with chats=chats chat_id=chat.id %}
-                {% if not chats %}
-                    <div>f</div>
-                {% endif %}
             </ul>
 
             <!-- Chat section -->
@@ -70,8 +69,10 @@
         const ckeditor_license_key = "{{ ckeditor_license_key }}";  // Send context variable to JS
     </script>
     <script src="{% static 'js/ckeditor.js' %}"></script>
+
+    <!-- Websockets -->
     <script>
-        // Websockets
+        // Messages
 
         const messageInput = document.getElementById("editor");
         const chatId = "{{ chat.id }}";
@@ -112,6 +113,19 @@
                 }));
                 ckeditor_instance.setData("");
             }
+        });
+    </script>
+    <script>
+        // Chat list
+
+        const chatListSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat-list/'
+        );
+
+        chatListSocket.addEventListener('message', e => {
+            document.body.dispatchEvent(new Event("updateChatList"));
         });
     </script>
 {% endblock %}
