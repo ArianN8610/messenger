@@ -1,5 +1,6 @@
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from . import models
 
@@ -44,14 +45,18 @@ class PrivateChatView(ListView):
         return 'messenger/message-object.html' if self.request.htmx else self.template_name
 
     def get_context_data(self, **kwargs):
+        # Get current chat
+        chat = get_object_or_404(models.PrivateChat, id=self.kwargs['chat_id'])
+
+        if not chat.has_user_view_permission(self.request.user):
+            raise Http404
+
         context = super().get_context_data(**kwargs)
         current_user = self.request.user
 
         chats = models.PrivateChat.objects.for_user(current_user)
         models.PrivateChat.update_chat_values(chats, current_user)
 
-        # Get current chat
-        chat = get_object_or_404(models.PrivateChat, id=self.kwargs['chat_id'])
         chat.other_user = chat.get_other_user(current_user).profile
 
         # CKEditor env

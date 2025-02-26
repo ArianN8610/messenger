@@ -109,6 +109,10 @@ class PrivateChat(models.Model):
             chat.other_user = chat.get_other_user(current_user).profile
             chat.unread_messages = chat.count_unread_messages(current_user)
 
+    def has_user_view_permission(self, current_user):
+        """Check whether the chat is for this user or not"""
+        return current_user == self.user1 or current_user == self.user2
+
 
 class Message(models.Model):
     sender = models.ForeignKey('accounts.User', related_name='messages', on_delete=models.SET_NULL, null=True)
