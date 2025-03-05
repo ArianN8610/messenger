@@ -7,12 +7,18 @@
             <span class="badge badge-outline mx-auto block">{{ message.sent_at|naturalday }}</span>
         {% endif %}
 
+        {% if forloop.first %}
+            <div hx-trigger="intersect once" hx-target="#messages-box" hx-swap="afterbegin"
+                 hx-get="{{ chat.get_absolute_url }}?page={{ page_obj.number|add:1 }}"
+                 class="text-center my-2 loading-box">
+                <div class="btn btn-circle no-animation btn-neutral">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+            </div>
+        {% endif %}
+
         <!-- Message -->
-        <div {% if forloop.first %}
-                hx-trigger="intersect once" hx-swap="beforebegin"
-                hx-get="{% url 'messenger:private-chat' chat_id=chat.id %}?page={{ page_obj.number|add:1 }}"
-            {% endif %}
-            class="chat {% if message.sender == chat.other_user.user %}chat-start{% else %}chat-end{% endif %}">
+        <div class="chat {% if message.sender == chat.other_user.user %}chat-start{% else %}chat-end{% endif %}">
             {% if message.edited_at %}
                 <div class="chat-header {% if message.sender == chat.other_user.user %}pl-2{% else %}pr-2{% endif %}">
                     <div class="text-xs opacity-50">

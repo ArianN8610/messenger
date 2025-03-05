@@ -38,7 +38,7 @@ class PrivateChatView(ListView):
     model = models.Message
     template_name = 'messenger/private-chat.html'
     context_object_name = 'messages'
-    paginate_by = 20
+    paginate_by = 50
 
     def get_template_names(self):
         """For infinite scrolling"""

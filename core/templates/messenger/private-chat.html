@@ -43,6 +43,8 @@
 
                 <!-- Messages box -->
                 <div id="messages-box" class="border-2 py-2 px-4 h-full rounded-box overflow-y-auto relative"
+                     hx-get="{{ chat.get_absolute_url }}" hx-trigger="updateMessagesBox from:body"
+                     hx-target="#messages-box" hx-swap="innerHTML"
                      x-init="$el.scrollTop = $el.scrollHeight">  <!-- To scroll to the bottom -->
                     {% include 'messenger/message-object.html' with chats=chats chat=chat %}
                 </div>
@@ -69,6 +71,7 @@
         const ckeditor_license_key = "{{ ckeditor_license_key }}";  // Send context variable to JS
     </script>
     <script src="{% static 'js/ckeditor.js' %}"></script>
+    <script src="{% static 'js/private-chat.js' %}"></script>
 
     <!-- Websockets -->
     <script>
@@ -86,18 +89,7 @@
         );
 
         chatSocket.addEventListener('message', e => {
-            const data = JSON.parse(e.data);
-            const chatBox = document.getElementById("messages-box");
-
-            chatBox.innerHTML += `
-                <div class="chat ${data.sender_id === senderId ? 'chat-end' : 'chat-start'}">
-                    <div class="chat-bubble break-words">
-                        <div dir="auto">${data.message}</div>
-                    </div>
-                    <div class="chat-footer opacity-50">${data.sent_at}</div>
-                </div>
-            `;
-            chatBox.scrollTop = chatBox.scrollHeight;  // Scroll to the last message
+            document.body.dispatchEvent(new Event("updateMessagesBox"));
         });
 
         chatSocket.addEventListener('close', e => {
