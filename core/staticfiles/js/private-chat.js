@@ -13,18 +13,21 @@ document.body.addEventListener("htmx:afterSwap", (e) => {
     const triggeredElement = e.detail.elt;
 
     if (triggeredElement.id === "messages-box") {
-        // Check if the request has the header to scroll to the bottom (for new messages)
         const requestEvent = e.detail.requestConfig.triggeringEvent.type;
-        if (requestEvent === "updateMessagesBox") {
-            // Ensure scrolling to the very bottom after rendering
-            requestAnimationFrame(() => {
-                chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-            });
-        } else {
+
+        if (requestEvent === "intersect") {
             const newScrollHeight = chatBox.scrollHeight;
             // Maintain scroll position after loading previous messages
             requestAnimationFrame(() => {
                 chatBox.scrollTop = newScrollHeight - oldScrollHeight;
+            });
+        }
+
+        // Check if the request has the header to scroll to the bottom (for new messages)
+        if (requestEvent === "updateMessagesBox" && websocket_type === "message") {
+            // Ensure scrolling to the very bottom after rendering
+            requestAnimationFrame(() => {
+                chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
             });
         }
     }

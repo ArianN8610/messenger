@@ -4,6 +4,7 @@ from django.db.models.functions import Concat
 from django.contrib.postgres.search import TrigramSimilarity
 
 from accounts.models import Profile, User
+from datetime import datetime
 
 
 class PrivateChatManager(models.Manager):
@@ -127,3 +128,9 @@ class Message(models.Model):
 
     def __str__(self):
         return f'{self.sender.username} -> ({self.chat.__str__()})'
+
+    def mark_as_read(self, user):
+        """Mark message as read"""
+        if self.chat.has_user_view_permission(user) and self.sender != user and not self.seen_at:
+            self.seen_at = datetime.now()
+            self.save()

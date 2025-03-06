@@ -79,7 +79,7 @@
 
         const messageInput = document.getElementById("editor");
         const chatId = "{{ chat.id }}";
-        const senderId = "{{ request.user.id }}";
+        const senderId = {{ request.user.id }};
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
@@ -88,8 +88,13 @@
             + '/'
         );
 
+        let websocket_type = ""
         chatSocket.addEventListener('message', e => {
-            document.body.dispatchEvent(new Event("updateMessagesBox"));
+            const data = JSON.parse(e.data);
+            websocket_type = data.action
+            if (data.user_id !== senderId) {
+                document.body.dispatchEvent(new Event("updateMessagesBox"));
+            }
         });
 
         chatSocket.addEventListener('close', e => {
@@ -100,12 +105,32 @@
             const message = ckeditor_instance.getData().trim();
             if (message) {
                 chatSocket.send(JSON.stringify({
+                    "type": "message",
                     "message": message,
                     "sender_id": senderId
                 }));
                 ckeditor_instance.setData("");
             }
         });
+
+        function waitForSocketConnection(callback) {
+            const interval = setInterval(() => {
+                if (chatSocket.readyState === WebSocket.OPEN) {
+                    clearInterval(interval);
+                    callback();
+                }
+            }, 100); // Check every 100 milliseconds
+        }
+
+        function markMessageAsRead(message_id) {
+            waitForSocketConnection(() => {
+                chatSocket.send(JSON.stringify({
+                    "type": "seen",
+                    "message_id": message_id,
+                    "user_id": senderId
+                }));
+            })
+        }
     </script>
     <script>
         // Chat list

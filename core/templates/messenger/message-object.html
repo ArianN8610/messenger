@@ -18,7 +18,14 @@
         {% endif %}
 
         <!-- Message -->
-        <div class="chat {% if message.sender == chat.other_user.user %}chat-start{% else %}chat-end{% endif %}">
+        <div {% if message.sender == chat.other_user.user %}
+            class="chat chat-start"
+            {% if not message.seen_at %}
+                x-intersect.once="markMessageAsRead({{ message.id }})"
+            {% endif %}
+        {% else %}
+            class="chat chat-end"
+        {% endif %}>
             {% if message.edited_at %}
                 <div class="chat-header {% if message.sender == chat.other_user.user %}pl-2{% else %}pr-2{% endif %}">
                     <div class="text-xs opacity-50">

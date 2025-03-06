@@ -2,7 +2,6 @@ import json
 import html
 
 import bleach
-from django.db.models import Q
 from bleach.linkifier import Linker
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -44,8 +43,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.chat_name, self.channel_name)
 
     async def receive(self, text_data):
-        """Receive message, save it in the DB, and send it to the group"""
+        """Receive message"""
         data = json.loads(text_data)
+        message_type = data.get('type', 'message')  # Default is 'message'
+
+        match message_type:
+            case 'message':
+                await self.handle_message(data)
+            case 'seen':
+                await self.handle_seen(data)
+    
+    async def handle_message(self, data):
+        """Save message in the DB, and send it to the group"""
         message = data['message']
         sender_id = data['sender_id']
 
@@ -80,32 +89,52 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.chat_name,
             {
-                'type': 'chat_message',
-                'message': message,
-                'sender_id': sender_id,
-                'sent_at': new_message.sent_at.strftime('%H:%M'),
+                "type": "broadcast",
+                "action": "message",
             }
         )
 
-        # Send message to update the sender and recipient chats
+        await self.update_chat_list()
+
+    async def handle_seen(self, data):
+        """Mark messages as read"""
+        message_id = data['message_id']
+        user_id = data['user_id']
+
+        message = await sync_to_async(Message.objects.get)(id=message_id)
+        user = await sync_to_async(User.objects.get)(id=user_id)
+
+        await sync_to_async(message.mark_as_read)(user)
+
         await self.channel_layer.group_send(
-            f"user_{sender.id}_chats",
+            self.chat_name,
+            {
+                "type": "broadcast",
+                "action": "seen",
+                "user_id": user_id
+            }
+        )
+        await self.update_chat_list()
+
+    async def update_chat_list(self):
+        """Send message to update the sender and recipient chats"""
+        chat = await sync_to_async(PrivateChat.objects.get)(id=self.chat_id)
+        user1_id = await sync_to_async(lambda: chat.user1.id)()
+        user2_id = await sync_to_async(lambda: chat.user2.id)()
+
+        await self.channel_layer.group_send(
+            f"user_{user1_id}_chats",
             {"type": "update_chat_list"}
         )
 
-        other_user = await sync_to_async(chat.get_other_user)(sender)
         await self.channel_layer.group_send(
-            f"user_{other_user.id}_chats",
+            f"user_{user2_id}_chats",
             {"type": "update_chat_list"}
         )
 
-    async def chat_message(self, event):
-        """Send message to all connected users"""
-        await self.send(text_data=json.dumps({
-            'message': event['message'],
-            'sender_id': event['sender_id'],
-            'sent_at': event['sent_at'],
-        }))
+    async def broadcast(self, event):
+        """Send a broadcast message to web socket group"""
+        await self.send(text_data=json.dumps(event))
 
 
 class ChatListConsumer(AsyncWebsocketConsumer):

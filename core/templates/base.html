@@ -9,7 +9,10 @@
 		<meta http-equiv="X-UA-Compatible" content="ie=edge">
 		{% tailwind_css %}
         <script src="{% static 'js/htmx.min.js' %}" defer></script>
-        <script src="{% static 'js/alpine.js' %}" defer></script>
+        <!-- Alpine Plugins -->
+        <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.14.8/dist/cdn.min.js"></script>
+        <!-- Alpine Core -->
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
         {% block head %}{% endblock %}
 	</head>
 
