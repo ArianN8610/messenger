@@ -35,19 +35,21 @@
                     <a href="/" class="block lg:hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                     </a>
-                    <!-- User avatar -->
-                    <div class="flex lg:hidden">
-                        {% get_user_avatar chat.other_user '!size-10' %}
-                    </div>
-                    <!-- User full name and last seen -->
-                    <div class="flex flex-col">
-                        <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
-                        <div class="text-xs opacity-50">
-                            {% if chat.other_user.last_seen %}
-                                Last seen {{ chat.other_user.last_seen|naturaltime }}
-                            {% else %}
-                                Last seen a long time ago
-                            {% endif %}
+                    <div class="flex items-center gap-2 hover:cursor-pointer" onclick="user_info.showModal()">
+                        <!-- User avatar -->
+                        <div class="flex lg:hidden">
+                            {% get_user_avatar chat.other_user '!size-10' %}
+                        </div>
+                        <!-- User full name and last seen -->
+                        <div class="flex flex-col">
+                            <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
+                            <div class="text-xs opacity-50">
+                                {% if chat.other_user.last_seen %}
+                                    Last seen {{ chat.other_user.last_seen|naturaltime }}
+                                {% else %}
+                                    Last seen a long time ago
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,6 +76,20 @@
                     </button>
                 </div>
             </div>
+
+            <!-- User information modal -->
+            <dialog id="user_info" class="modal">
+                <div class="modal-box">
+                    <form method="dialog">
+                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    </form>
+                    <h3 class="text-lg font-bold">User Information</h3>
+                    {% include 'messenger/chat-detail.html' with user=chat.other_user current_chat=chat %}
+                </div>
+                <form method="dialog" class="modal-backdrop">
+                    <button>close</button>
+                </form>
+            </dialog>
         </div>
     </main>
 

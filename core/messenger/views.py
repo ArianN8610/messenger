@@ -1,8 +1,9 @@
-from django.views.generic import ListView
-from django.shortcuts import get_object_or_404
+from django.views.generic import ListView, View
+from django.shortcuts import get_object_or_404, redirect
 from django.http import Http404
 
 from . import models
+from accounts.models import User
 
 from decouple import config
 
@@ -110,3 +111,15 @@ class ChatListView(ListView):
             context['global_search_results'] = self.model.objects.search(self.request.user, q, True)
 
         return context
+
+
+class StartChatView(View):
+    def get(self, request, *args, **kwargs):
+        return redirect('messenger:index')
+
+    def post(self, request, *args, **kwargs):
+        other_user_id = request.POST.get('other_user')
+        other_user = get_object_or_404(User, id=other_user_id)
+
+        chat, created = models.PrivateChat.objects.get_or_create(user1=request.user, user2=other_user)
+        return redirect(chat.get_absolute_url())  # Redirect to chat page

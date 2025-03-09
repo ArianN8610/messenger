@@ -45,7 +45,7 @@
         {% if not forloop.first %}
             <div class="divider m-0"></div>
         {% endif %}
-        <li><a class="px-2 inline">
+        <li><a onclick="user_{{ user.id }}_info.showModal()" class="px-2 inline">
             <div class="flex items-center gap-3">
                 <div class="avatar">
                     <div class="mask mask-squircle h-12 w-12">
@@ -58,6 +58,20 @@
                 </div>
             </div>
         </a></li>
+
+        <!-- User information modal -->
+        <dialog id="user_{{ user.id }}_info" class="modal">
+            <div class="modal-box">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="text-lg font-bold">User Information</h3>
+                {% include 'messenger/chat-detail.html' with user=user.profile %}
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
     {% endfor %}
 {% endif %}
 
