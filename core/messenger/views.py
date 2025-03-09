@@ -55,12 +55,19 @@ class PrivateChatView(ListView):
         current_user = self.request.user
 
         chats = models.PrivateChat.objects.for_user(current_user)
+        # Search result
+        if q := self.request.GET.get('q'):
+            chats = models.PrivateChat.objects.search(self.request.user, q)
         models.PrivateChat.update_chat_values(chats, current_user)
 
         chat.other_user = chat.get_other_user(current_user).profile
 
         # CKEditor env
         ckeditor_license_key = config("CKEDITOR_LICENSE_KEY")
+
+        # General search result
+        if q := self.request.GET.get('q'):
+            context['global_search_results'] = models.PrivateChat.objects.search(self.request.user, q, True)
 
         return context | {'chats': chats, 'chat': chat, 'ckeditor_license_key': ckeditor_license_key}
 
@@ -97,5 +104,9 @@ class ChatListView(ListView):
 
         chat_id = self.request.GET.get('chat-id')
         context['chat_id'] = int(chat_id) if chat_id else chat_id
+
+        # General search result
+        if q := self.request.GET.get('q'):
+            context['global_search_results'] = self.model.objects.search(self.request.user, q, True)
 
         return context

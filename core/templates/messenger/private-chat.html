@@ -11,11 +11,22 @@
 	<main class="min-h-screen w-full">
         <div class="flex w-full relative h-full">
             <!-- Sidebar -->
-            <ul class="menu bg-base-200 rounded-box flex-[2] overflow-y-auto m-2 mr-0 h-chat flex-nowrap hidden lg:flex"
-                id="chat-list" hx-get="{% url 'messenger:chat-list' %}?chat-id={{ chat.id }}"
-                hx-trigger="updateChatList from:body" hx-target="#chat-list" hx-swap="innerHTML">
-                {% include 'messenger/sidebar.html' with chats=chats chat_id=chat.id %}
-            </ul>
+            <div class="flex-[2] hidden lg:flex flex-col h-chat m-2 mr-0 gap-2">
+                <form method="get">
+                    <label class="input input-bordered flex items-center gap-2">
+                        <input type="text" name="q" class="grow" placeholder="Search" value="{{ request.GET.q }}"
+                               onfocus="let temp_value=this.value; this.value=''; this.value=temp_value"/>  <!-- To put cursor at end -->
+                        <button type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-5 opacity-70"><path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd"/></svg>
+                        </button>
+                    </label>
+                </form>
+                <ul class="menu bg-base-200 rounded-box overflow-y-auto h-full flex-nowrap flex"
+                    id="chat-list" hx-get="{% url 'messenger:chat-list' %}?chat-id={{ chat.id }}&q={{ request.GET.q }}"
+                    hx-trigger="updateChatList from:body" hx-target="#chat-list" hx-swap="innerHTML">
+                    {% include 'messenger/sidebar.html' with chats=chats chat_id=chat.id global_search_results=global_search_results %}
+                </ul>
+            </div>
 
             <!-- Chat section -->
             <div class="flex flex-col flex-[5] h-chat m-2 gap-2">

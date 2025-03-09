@@ -38,3 +38,32 @@
         </a></li>
     {% endfor %}
 {% endif %}
+
+{% if global_search_results %}
+    <div class="divider">Global search results</div>
+    {% for user in global_search_results %}
+        {% if not forloop.first %}
+            <div class="divider m-0"></div>
+        {% endif %}
+        <li><a class="px-2 inline">
+            <div class="flex items-center gap-3">
+                <div class="avatar">
+                    <div class="mask mask-squircle h-12 w-12">
+                        <img src="{% cropped_thumbnail user.profile "cropping" scale=1 %}" alt="{{ user.profile.get_full_name }}-avatar"/>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <div class="font-bold">{{ user.profile.get_full_name }}</div>
+                    <div class="text-sm opacity-50">@{{ user.username }}</div>
+                </div>
+            </div>
+        </a></li>
+    {% endfor %}
+{% endif %}
+
+{% if not global_search_results and not chats and request.GET.q %}
+    <div class="mt-4 flex flex-col items-center gap-2">
+        <div class="text-xl font-bold">No Results</div>
+        <p>There were no results for "{{ request.GET.q }}"</p>
+    </div>
+{% endif %}
