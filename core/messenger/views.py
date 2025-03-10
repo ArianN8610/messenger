@@ -8,6 +8,16 @@ from accounts.models import User
 from decouple import config
 
 
+def get_users_ids(chats, user):
+    """Get other users id to display status in frontend"""
+    users_ids = []
+    for user_chat in chats:
+        if other_user := user_chat.get_other_user(user):
+            users_ids.append(other_user.id)
+
+    return users_ids
+
+
 class IndexView(ListView):
     model = models.PrivateChat
     template_name = 'messenger/index.html'
@@ -20,13 +30,7 @@ class IndexView(ListView):
         if q := self.request.GET.get('q'):
             context['global_search_results'] = models.PrivateChat.objects.search(self.request.user, q, True)
 
-        # Get other users id to display status in frontend
-        users_ids = []
-        for user_chat in self.get_queryset():
-            if other_user := user_chat.get_other_user(self.request.user):
-                users_ids.append(other_user.id)
-
-        return context | {'users_ids': users_ids}
+        return context | {'users_ids': get_users_ids(self.get_queryset(), self.request.user)}
 
     def get_queryset(self):
         user = self.request.user
@@ -48,8 +52,10 @@ class PrivateChatView(ListView):
     paginate_by = 50
 
     def get_template_names(self):
-        """For infinite scrolling"""
-        return 'messenger/message-object.html' if self.request.htmx else self.template_name
+        """Use a different template for AJAX (HTMX) requests"""
+        if self.request.htmx or self.request.GET.get('ajax'):
+            return 'messenger/message-object.html'
+        return self.template_name
 
     def get_context_data(self, **kwargs):
         # Get current chat
@@ -77,7 +83,18 @@ class PrivateChatView(ListView):
         if q := self.request.GET.get('q'):
             context['global_search_results'] = models.PrivateChat.objects.search(self.request.user, q, True)
 
-        return context | {'chats': chats, 'chat': chat, 'ckeditor_license_key': ckeditor_license_key}
+        messages = self.get_queryset()
+        # Find the page with the first unseen message
+        first_unseen_message = messages.filter(seen_at__isnull=True).exclude(sender=self.request.user).last()
+        unseen_page_number = None
+
+        if first_unseen_message:
+            message_index = list(messages).index(first_unseen_message)
+            unseen_page_number = (message_index // self.paginate_by) + 1
+
+        return context | {'chats': chats, 'chat': chat, 'ckeditor_license_key': ckeditor_license_key,
+                          'unseen_page_number': unseen_page_number, 'users_ids': get_users_ids(chats, current_user),
+                          'first_unseen_id': first_unseen_message.id if first_unseen_message else None}
 
     def get_queryset(self):
         messages = self.model.objects.filter(chat=self.kwargs['chat_id']).order_by("-sent_at")

@@ -71,7 +71,7 @@
                 <div id="messages-box" class="border-2 py-2 px-4 h-full rounded-box overflow-y-auto relative"
                      hx-get="{{ chat.get_absolute_url }}" hx-trigger="updateMessagesBox from:body"
                      hx-target="#messages-box" hx-swap="innerHTML"
-                     x-init="$el.scrollTop = $el.scrollHeight">  <!-- To scroll to the bottom -->
+                     {% if not first_unseen_id %}x-init="$el.scrollTop = $el.scrollHeight"{% endif %}>  <!-- To scroll to the bottom -->
                     {% include 'messenger/message-object.html' with chats=chats chat=chat %}
                 </div>
 
@@ -116,6 +116,64 @@
     </script>
     <script src="{% static 'js/ckeditor.js' %}"></script>
     <script src="{% static 'js/private-chat.js' %}"></script>
+    {% if first_unseen_id %}
+        <script>
+            const unseenPageNumber = {{ unseen_page_number }};
+            const firstUnseenId = {{ first_unseen_id }};
+
+            if (unseenPageNumber) {
+                const messagesBox = document.getElementById('messages-box');
+
+                // Function to load a specific page
+                const loadPage = (pageNumber) => {
+                    return fetch(`{{ chat.get_absolute_url }}?page=${pageNumber}&ajax=true`)
+                        .then(response => response.text())
+                        .then(html => {
+                            const fragment = document.createRange().createContextualFragment(html);
+                            return fragment;
+                        });
+                };
+
+                // Function to load all pages up to the unseen page
+                const loadAllPages = async () => {
+                    const fragments = [];
+
+                    // Load all pages from 1 to unseenPageNumber
+                    for (let i = 1; i <= unseenPageNumber; i++) {
+                        const fragment = await loadPage(i);
+                        fragments.push(fragment);
+                    }
+
+                    // Clear the messagesBox and append all fragments in order
+                    messagesBox.innerHTML = ''; // Clear existing content
+                    fragments.forEach(fragment => {
+                        messagesBox.appendChild(fragment);
+                    });
+
+                    // Wait for the DOM to update
+                    setTimeout(() => {
+                        const unseenMessage = document.getElementById(`message-${firstUnseenId}`);
+
+                        // Add divider before unseen messages
+                        const divider = document.createElement('div');
+                        divider.classList.add('divider');
+                        divider.innerText = 'Unread messages';
+                        unseenMessage.parentNode.insertBefore(divider, unseenMessage);
+
+                        // Scroll to the first unseen message
+                        if (unseenMessage) {
+                            unseenMessage.scrollIntoView({block: "center"});
+                        }
+                    }, 100); // Adjust the delay if needed
+                };
+
+                // Start loading all pages
+                loadAllPages().catch(error => {
+                    console.error('Error loading pages:', error);
+                });
+            }
+        </script>
+    {% endif %}
 
     <!-- Websockets -->
     {% if chat.other_user %}
@@ -189,17 +247,20 @@
 
             userStatusSocket.addEventListener('message', e => {
                 const data = JSON.parse(e.data);
+
+                if ({{ users_ids }}.includes(data.user_id)) {
+                    document.body.dispatchEvent(new Event("updateChatList"));
+                }
+
                 if (data.user_id === {{ chat.other_user.user.id }}) {
                     if (data.is_online) {
                         userStatus.innerText = 'Online';
                         userStatus.classList.remove('opacity-50');
                         userStatus.classList.add('text-primary');
-                        document.body.dispatchEvent(new Event("updateChatList"));
                     } else {
                         userStatus.innerText = 'Last seen ' + data.last_seen;
                         userStatus.classList.add('opacity-50');
                         userStatus.classList.remove('text-primary');
-                        document.body.dispatchEvent(new Event("updateChatList"));
                     }
                 }
             })

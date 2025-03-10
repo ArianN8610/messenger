@@ -18,7 +18,7 @@
         {% endif %}
 
         <!-- Message -->
-        <div {% if message.sender == chat.other_user.user %}
+        <div id="message-{{ message.id }}" {% if message.sender == chat.other_user.user %}
             class="chat chat-start"
             {% if not message.seen_at %}
                 x-intersect.once="markMessageAsRead({{ message.id }})"
