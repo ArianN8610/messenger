@@ -35,15 +35,24 @@
                     <a href="/" class="block lg:hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                     </a>
-                    <div class="flex items-center gap-2 hover:cursor-pointer" onclick="user_info.showModal()">
+                    <div class="flex items-center gap-2 {% if chat.other_user %}hover:cursor-pointer{% endif %}"
+                         {% if chat.other_user %}onclick="user_info.showModal()"{% endif %}>
                         <!-- User avatar -->
                         <div class="flex lg:hidden">
                             {% get_user_avatar chat.other_user '!size-10' %}
                         </div>
                         <!-- User full name and last seen -->
                         <div class="flex flex-col">
-                            <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
-                            {% if chat.other_user.is_online %}
+                            <div class="font-bold">
+                                {% if chat.other_user %}
+                                    {{ chat.other_user.get_full_name }}
+                                {% else %}
+                                    Deleted Account
+                                {% endif %}
+                            </div>
+                            {% if not chat.other_user %}
+                                <div class="text-xs opacity-50">Last seen a long time ago</div>
+                            {% elif chat.other_user.is_online %}
                                 <div class="text-xs text-primary" id="user-status">Online</div>
                             {% else %}
                                 <div class="text-xs opacity-50" id="user-status">
@@ -66,34 +75,38 @@
                     {% include 'messenger/message-object.html' with chats=chats chat=chat %}
                 </div>
 
-                <!-- Typing indicator -->
-                <div class="flex items-end gap-2" x-data>
-                    <div class="w-full" id="editor-container">
-                        <div class="w-full">
-                            <div @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"
-                                 class="max-h-48 !textarea !textarea-bordered break-words !py-0"
-                                 id="editor" x-ref="input"></div>
+                {% if chat.other_user %}
+                    <!-- Typing indicator -->
+                    <div class="flex items-end gap-2" x-data>
+                        <div class="w-full" id="editor-container">
+                            <div class="w-full">
+                                <div @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"
+                                     class="max-h-48 !textarea !textarea-bordered break-words !py-0"
+                                     id="editor" x-ref="input"></div>
+                            </div>
                         </div>
+                        <button class="btn" id="send-button" x-ref="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" /></svg>
+                        </button>
                     </div>
-                    <button class="btn" id="send-button" x-ref="submit">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5"><path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" /></svg>
-                    </button>
-                </div>
+                {% endif %}
             </div>
 
-            <!-- User information modal -->
-            <dialog id="user_info" class="modal">
-                <div class="modal-box">
-                    <form method="dialog">
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            {% if chat.other_user %}
+                <!-- User information modal -->
+                <dialog id="user_info" class="modal">
+                    <div class="modal-box">
+                        <form method="dialog">
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        </form>
+                        <h3 class="text-lg font-bold">User Information</h3>
+                        {% include 'messenger/chat-detail.html' with user=chat.other_user current_chat=chat %}
+                    </div>
+                    <form method="dialog" class="modal-backdrop">
+                        <button>close</button>
                     </form>
-                    <h3 class="text-lg font-bold">User Information</h3>
-                    {% include 'messenger/chat-detail.html' with user=chat.other_user current_chat=chat %}
-                </div>
-                <form method="dialog" class="modal-backdrop">
-                    <button>close</button>
-                </form>
-            </dialog>
+                </dialog>
+            {% endif %}
         </div>
     </main>
 
@@ -105,7 +118,8 @@
     <script src="{% static 'js/private-chat.js' %}"></script>
 
     <!-- Websockets -->
-    <script>
+    {% if chat.other_user %}
+        <script>
         // Messages
 
         const messageInput = document.getElementById("editor");
@@ -163,41 +177,33 @@
             })
         }
     </script>
-    <script>
-        // Chat list
-
-        const chatListSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat-list/'
-        );
-
-        chatListSocket.addEventListener('message', e => {
-            document.body.dispatchEvent(new Event("updateChatList"));
-        });
-    </script>
+    {% endif %}
+    <script src="{% static 'js/chat_list_websocket.js' %}"></script>
     <script>
         // User status
 
         const userStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/user-status/');
-        const userStatus = document.getElementById('user-status');
 
-        userStatusSocket.addEventListener('message', e => {
-            const data = JSON.parse(e.data);
-            if (data.user_id === {{ chat.other_user.user.id }}) {
-                if (data.is_online) {
-                    userStatus.innerText = 'Online';
-                    userStatus.classList.remove('opacity-50');
-                    userStatus.classList.add('text-primary');
-                    document.body.dispatchEvent(new Event("updateChatList"));
-                } else {
-                    userStatus.innerText = 'Last seen ' + data.last_seen;
-                    userStatus.classList.add('opacity-50');
-                    userStatus.classList.remove('text-primary');
-                    document.body.dispatchEvent(new Event("updateChatList"));
+        {% if chat.other_user %}
+            const userStatus = document.getElementById('user-status');
+
+            userStatusSocket.addEventListener('message', e => {
+                const data = JSON.parse(e.data);
+                if (data.user_id === {{ chat.other_user.user.id }}) {
+                    if (data.is_online) {
+                        userStatus.innerText = 'Online';
+                        userStatus.classList.remove('opacity-50');
+                        userStatus.classList.add('text-primary');
+                        document.body.dispatchEvent(new Event("updateChatList"));
+                    } else {
+                        userStatus.innerText = 'Last seen ' + data.last_seen;
+                        userStatus.classList.add('opacity-50');
+                        userStatus.classList.remove('text-primary');
+                        document.body.dispatchEvent(new Event("updateChatList"));
+                    }
                 }
-            }
-        })
+            })
+        {% endif %}
     </script>
     <script src="{% static 'js/user_status.js' %}"></script>
 {% endblock %}

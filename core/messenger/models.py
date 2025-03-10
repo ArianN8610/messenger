@@ -7,6 +7,12 @@ from accounts.models import Profile, User
 from datetime import datetime
 
 
+def get_user_username(user):
+    if user:
+        return user.username
+    return 'Deleted Account'
+
+
 class PrivateChatManager(models.Manager):
     def for_user(self, user):
         """Returns all chats the user has"""
@@ -87,7 +93,7 @@ class PrivateChat(models.Model):
         unique_together = ('user1', 'user2')  # Both users only have one private chat
 
     def __str__(self):
-        return f'{self.user1.username} & {self.user2.username}'
+        return f'{get_user_username(self.user1)} & {get_user_username(self.user2)}'
 
     def get_absolute_url(self):
         return reverse('messenger:private-chat', kwargs={'chat_id': self.pk})
@@ -107,7 +113,8 @@ class PrivateChat(models.Model):
     def update_chat_values(chats, current_user):
         """Add other user and unread messages for each chat"""
         for chat in chats:
-            chat.other_user = chat.get_other_user(current_user).profile
+            other_user = chat.get_other_user(current_user)
+            chat.other_user = other_user.profile if other_user else None
             chat.unread_messages = chat.count_unread_messages(current_user)
 
     def has_user_view_permission(self, current_user):
@@ -127,7 +134,7 @@ class Message(models.Model):
     edited_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.sender.username} -> ({self.chat.__str__()})'
+        return f'{get_user_username(self.sender)} -> ({self.chat.__str__()})'
 
     def mark_as_read(self, user):
         """Mark message as read"""

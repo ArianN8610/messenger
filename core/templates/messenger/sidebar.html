@@ -10,9 +10,15 @@
                 {% get_user_avatar chat.other_user %}
                 <div class="flex flex-col w-full gap-1">
                     <div class="flex justify-between items-center">
-                        <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
+                        <div class="font-bold">
+                            {% if chat.other_user %}
+                                {{ chat.other_user.get_full_name }}
+                            {% else %}
+                                Deleted Account
+                            {% endif %}
+                        </div>
                         <div class="opacity-50">
-                            {% if chat.other_user != chat.get_last_message.sender.profile %}
+                            {% if request.user == chat.get_last_message.sender %}
                                 {% if chat.get_last_message.seen_at %}
                                     Seen at
                                     {{ chat.get_last_message.seen_at|get_last_message_time_display }}

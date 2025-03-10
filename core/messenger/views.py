@@ -23,7 +23,8 @@ class IndexView(ListView):
         # Get other users id to display status in frontend
         users_ids = []
         for user_chat in self.get_queryset():
-            users_ids.append(user_chat.get_other_user(self.request.user).id)
+            if other_user := user_chat.get_other_user(self.request.user):
+                users_ids.append(other_user.id)
 
         return context | {'users_ids': users_ids}
 
@@ -66,7 +67,8 @@ class PrivateChatView(ListView):
             chats = models.PrivateChat.objects.search(self.request.user, q)
         models.PrivateChat.update_chat_values(chats, current_user)
 
-        chat.other_user = chat.get_other_user(current_user).profile
+        other_user = chat.get_other_user(current_user)
+        chat.other_user = other_user.profile if other_user else None
 
         # CKEditor env
         ckeditor_license_key = config("CKEDITOR_LICENSE_KEY")
