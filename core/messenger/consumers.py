@@ -1,13 +1,15 @@
 import json
 import html
+from datetime import datetime
 
 import bleach
 from bleach.linkifier import Linker
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from accounts.models import User
+from accounts.models import User, Profile
 from .models import Message, PrivateChat
+from .templatetags.messenger_tags import last_seen_display
 
 
 def add_custom_attrs(tag, name, value):
@@ -157,3 +159,56 @@ class ChatListConsumer(AsyncWebsocketConsumer):
     async def update_chat_list(self, event):
         """Sending useless value just to activate websocket"""
         await self.send(text_data=json.dumps({'status': 'ping'}))
+
+
+class UserStatusConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        self.group_name = 'users_status'
+
+        await self.update_user_status(True)
+
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.update_user_status(False, datetime.now())
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        """Receive message"""
+        data = json.loads(text_data)
+        message_type = data.get('type', 'online')
+
+        if message_type == 'online':
+            await self.update_user_status(True)
+        elif message_type == 'offline':
+            await self.update_user_status(False, datetime.now())
+
+    async def update_user_status(self, is_online, last_seen=None):
+        """Update user status in the DB"""
+
+        # Get user from DB
+        user = await sync_to_async(Profile.objects.get)(user=self.user)
+
+        # Update user data in the DB
+        user.is_online = is_online
+        if last_seen:
+            user.last_seen = last_seen
+
+        # Save user
+        await sync_to_async(user.save)()
+
+        # Send a message to all users in the group
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'broadcast',
+                'is_online': is_online,
+                'user_id': self.user.id,
+                'last_seen': last_seen_display(last_seen) if last_seen is not None else '',
+            }
+        )
+
+    async def broadcast(self, event):
+        await self.send(text_data=json.dumps(event))

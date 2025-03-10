@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load cropping messenger_tags %}
+{% load static cropping messenger_tags %}
 
 {% block body %}
 	<main class="min-h-screen flex flex-col items-center p-4 gap-4">
@@ -19,8 +19,9 @@
         </ul>
     </main>
 
+    <!-- Websockets -->
     <script>
-        // Websockets
+        // Chat list
 
         const chatListSocket = new WebSocket(
             'ws://'
@@ -32,4 +33,17 @@
             document.body.dispatchEvent(new Event("updateChatList"));
         });
     </script>
+    <script>
+        // User status
+
+        const userStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/user-status/');
+
+        userStatusSocket.addEventListener('message', e => {
+            const data = JSON.parse(e.data);
+            if ({{ users_ids }}.includes(data.user_id)) {
+                document.body.dispatchEvent(new Event("updateChatList"));
+            }
+        })
+    </script>
+    <script src="{% static 'js/user_status.js' %}"></script>
 {% endblock %}

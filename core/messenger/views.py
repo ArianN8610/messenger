@@ -20,7 +20,12 @@ class IndexView(ListView):
         if q := self.request.GET.get('q'):
             context['global_search_results'] = models.PrivateChat.objects.search(self.request.user, q, True)
 
-        return context
+        # Get other users id to display status in frontend
+        users_ids = []
+        for user_chat in self.get_queryset():
+            users_ids.append(user_chat.get_other_user(self.request.user).id)
+
+        return context | {'users_ids': users_ids}
 
     def get_queryset(self):
         user = self.request.user

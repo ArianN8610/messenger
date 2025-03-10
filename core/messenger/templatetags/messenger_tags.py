@@ -1,6 +1,8 @@
 from django import template
 from datetime import datetime, timedelta
 
+from django.contrib.humanize.templatetags.humanize import naturaltime
+
 register = template.Library()
 
 
@@ -37,3 +39,11 @@ def get_message_time_display(message_datetime):
         time_result = f"{message_datetime.strftime('%a')} {message_time}"
 
     return time_result
+
+
+@register.filter
+def last_seen_display(last_seen):
+    if last_seen.date() == datetime.today().date():
+        return 'recently'
+    else:
+        return naturaltime(last_seen)

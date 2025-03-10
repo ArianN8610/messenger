@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static cropping general_tags humanize %}
+{% load static cropping general_tags messenger_tags humanize %}
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/private-chat.css' %}">
@@ -43,13 +43,17 @@
                         <!-- User full name and last seen -->
                         <div class="flex flex-col">
                             <div class="font-bold">{{ chat.other_user.get_full_name }}</div>
-                            <div class="text-xs opacity-50">
-                                {% if chat.other_user.last_seen %}
-                                    Last seen {{ chat.other_user.last_seen|naturaltime }}
-                                {% else %}
-                                    Last seen a long time ago
-                                {% endif %}
-                            </div>
+                            {% if chat.other_user.is_online %}
+                                <div class="text-xs text-primary" id="user-status">Online</div>
+                            {% else %}
+                                <div class="text-xs opacity-50" id="user-status">
+                                    {% if chat.other_user.last_seen %}
+                                        Last seen {{ chat.other_user.last_seen|last_seen_display }}
+                                    {% else %}
+                                        Last seen a long time ago
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -172,4 +176,28 @@
             document.body.dispatchEvent(new Event("updateChatList"));
         });
     </script>
+    <script>
+        // User status
+
+        const userStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/user-status/');
+        const userStatus = document.getElementById('user-status');
+
+        userStatusSocket.addEventListener('message', e => {
+            const data = JSON.parse(e.data);
+            if (data.user_id === {{ chat.other_user.user.id }}) {
+                if (data.is_online) {
+                    userStatus.innerText = 'Online';
+                    userStatus.classList.remove('opacity-50');
+                    userStatus.classList.add('text-primary');
+                    document.body.dispatchEvent(new Event("updateChatList"));
+                } else {
+                    userStatus.innerText = 'Last seen ' + data.last_seen;
+                    userStatus.classList.add('opacity-50');
+                    userStatus.classList.remove('text-primary');
+                    document.body.dispatchEvent(new Event("updateChatList"));
+                }
+            }
+        })
+    </script>
+    <script src="{% static 'js/user_status.js' %}"></script>
 {% endblock %}

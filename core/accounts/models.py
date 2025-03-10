@@ -23,6 +23,7 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, blank=True)
     bio = models.TextField(max_length=100, blank=True)
+    is_online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(blank=True, null=True)
 
     def get_full_name(self):

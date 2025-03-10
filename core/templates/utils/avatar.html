@@ -1,6 +1,6 @@
 {% load cropping %}
 
-<div class="avatar {% if not user.avatar %}placeholder{% endif %}">
+<div class="avatar {% if not user.avatar %}placeholder{% endif %} {% if user.is_online %}online{% endif %}">
     {% if user.avatar %}
         <div class="mask mask-squircle size-12 {{ avatar_styles }}">
             <img src="{% cropped_thumbnail user "cropping" scale=1 %}" alt="{{ user.get_full_name }}-avatar"/>
