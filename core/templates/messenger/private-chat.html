@@ -107,6 +107,9 @@
                     </form>
                 </dialog>
             {% endif %}
+
+            <ul class="menu gap-1 absolute bg-base-200 rounded-box w-56 shadow-lg wrapper invisible opacity-0 scale-90
+            transition-all duration-300 z-10"></ul>
         </div>
     </main>
 
@@ -116,6 +119,7 @@
     </script>
     <script src="{% static 'js/ckeditor.js' %}"></script>
     <script src="{% static 'js/private-chat.js' %}"></script>
+    <script src="{% static 'js/context-menu.js' %}"></script>
     {% if first_unseen_id %}
         <script>
             const unseenPageNumber = {{ unseen_page_number }};
