@@ -48,7 +48,7 @@ function updateContextMenu(element) {
     // Generate HTML for context menu items
     let contextInnerHTML = ``;
     contextMenuItems.forEach(i => {
-        contextInnerHTML += `<li>
+        contextInnerHTML += `<li onclick=${i==='delete' ? "delete_message_modal.showModal()" : ""}>
                 <a id="context-menu-${i}">
                     ${itemsIcon[i]}
                     <span>${toTitleCase(i)}</span>

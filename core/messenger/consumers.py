@@ -54,7 +54,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_message(data)
             case 'seen':
                 await self.handle_seen(data)
-    
+            case 'delete':
+                await self.handle_delete_message(data)
+
     async def handle_message(self, data):
         """Save message in the DB, and send it to the group"""
         message = data['message']
@@ -114,6 +116,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "broadcast",
                 "action": "seen",
                 "user_id": user_id
+            }
+        )
+        await self.update_chat_list()
+
+    async def handle_delete_message(self, data):
+        """Delete specified message"""
+        message_id = data['message_id']
+        user_id = data['user_id']
+
+        message = await sync_to_async(Message.objects.select_related('sender', 'chat').get)(id=message_id)
+
+        if message.sender.id == user_id and message.chat.id == int(self.chat_id):
+            await sync_to_async(message.delete)()
+
+        await self.channel_layer.group_send(
+            self.chat_name,
+            {
+                "type": "broadcast",
+                "action": "delete",
             }
         )
         await self.update_chat_list()

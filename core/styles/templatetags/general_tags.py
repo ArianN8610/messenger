@@ -16,6 +16,12 @@ def get_user_avatar(user_profile, avatar_styles=""):
     return context
 
 
+@register.inclusion_tag('utils/modal.html')
+def get_modal(modal_id, title, text):
+    context = {'modal_id': modal_id, 'title': title, 'text': text}
+    return context
+
+
 @register.filter
 def strip_tags(html):
     """Remove all HTML tags and return plain text"""
