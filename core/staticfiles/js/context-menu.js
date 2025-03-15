@@ -1,6 +1,7 @@
 // Select the context menu wrapper and messages box
 const contextMenu = document.querySelector('.wrapper'),
     messagesBox = document.getElementById('messages-box');
+let messageTarget;
 
 // Define icons for context menu items
 const itemsIcon = {
@@ -20,8 +21,7 @@ function toTitleCase(str) {
         .join(' ');
 }
 
-// Function to update the context menu items based on the target element
-function updateContextMenu(element) {
+function get_message(element) {
     // Traverse up the DOM tree to find the element with id starting with 'message-'
     while (element && element !== document.body) {
         if (element.id && element.id.startsWith('message-')) {
@@ -29,6 +29,13 @@ function updateContextMenu(element) {
         }
         element = element.parentElement;
     }
+
+    return element;
+}
+
+// Function to update the context menu items based on the target element
+function updateContextMenu(element) {
+    element = get_message(element);
 
     // Define context menu items based on the class of the element
     let contextMenuItems;
@@ -50,6 +57,18 @@ function updateContextMenu(element) {
     })
 
     return contextInnerHTML;
+}
+
+function copyFormattedText(element) {
+    // Create a ClipboardItem object to copy text in HTML format
+    const clipboardData = new ClipboardItem({
+        "text/html": new Blob([element.innerHTML], { type: "text/html" }),
+        "text/plain": new Blob([element.innerText], { type: "text/plain" })
+    });
+
+    navigator.clipboard.write([clipboardData]).catch(err => {
+        console.error("Copy failed:", err);
+    });
 }
 
 // Add contextmenu event listener to the messages box
@@ -75,16 +94,15 @@ messagesBox.addEventListener('contextmenu', e => {
     // Show the context menu with animation
     contextMenu.classList.remove('invisible', 'opacity-0', 'scale-90');
     contextMenu.classList.add('opacity-100', 'scale-100');
-    // Prevent scrolling in the messages box
-    messagesBox.classList.add('!overflow-hidden');
+
+    // Save the message that was clicked on
+    messageTarget = get_message(e.target);
 });
 
 // Hide the context menu on click
 document.addEventListener('click', () => {
     contextMenu.classList.remove('opacity-100', 'scale-100');
     contextMenu.classList.add('opacity-0', 'scale-90', 'invisible');
-    // Restore scrolling in the messages box
-    messagesBox.classList.remove('!overflow-hidden');
 });
 
 // Reset the context menu on window resize
@@ -93,6 +111,21 @@ window.addEventListener('resize', () => {
     contextMenu.style.top = '0px';
     contextMenu.classList.remove('opacity-100', 'scale-100');
     contextMenu.classList.add('opacity-0', 'scale-90', 'invisible');
-    // Restore scrolling in the messages box
-    messagesBox.classList.remove('!overflow-hidden');
+});
+
+// Hide the context menu on scrolling
+messagesBox.addEventListener('scroll', () => {
+    contextMenu.classList.remove('opacity-100', 'scale-100');
+    contextMenu.classList.add('opacity-0', 'scale-90', 'invisible');
+});
+
+contextMenu.addEventListener('click', e => {
+    const copyBtn = e.target.closest('#context-menu-copy');
+    
+    if (copyBtn) {
+        const messageText = messageTarget.querySelector('div.chat-bubble');
+
+        // Copy the text to clipboard
+        copyFormattedText(messageText);
+    }
 });
