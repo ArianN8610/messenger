@@ -81,14 +81,12 @@
                         <div class="flex flex-col w-full">
                             <div id="reply-box" x-ref="replyBox" class="hidden mx-2 p-2 rounded-t-box justify-between bg-secondary-content items-center">
                                 <input id="reply-message-id" type="hidden">
-                                <div class="flex gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="opacity-50 size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>
-                                    <div>
-                                        <div id="reply-title" class="text-xs opacity-50 mb-1"></div>
-                                        <div id="reply-text" class="break-all line-clamp-1"></div>
-                                    </div>
+                                <input id="box-status" type="hidden" value="reply">
+                                <div>
+                                    <div id="reply-title" class="text-xs opacity-50 mb-1"></div>
+                                    <div id="reply-text" class="break-all line-clamp-1"></div>
                                 </div>
-                                <div class="btn btn-sm btn-circle btn-ghost"
+                                <div id="reply-close-btn" class="btn btn-sm btn-circle btn-ghost"
                                      @click="$refs.replyBox.classList.add('hidden')">✕</div>
                             </div>
                             <div class="w-full" id="editor-container">
@@ -235,7 +233,8 @@
                     "type": "message",
                     "message": message,
                     "sender_id": senderId,
-                    "reply": replyMessageId.value && !replyBox.classList.contains('hidden') ? +replyMessageId.value : ''
+                    "reply": replyMessageId.value && !replyBox.classList.contains('hidden') && boxStatus.value === 'reply' ? +replyMessageId.value : '',
+                    "edit": replyMessageId.value && !replyBox.classList.contains('hidden') && boxStatus.value === 'edit' ? +replyMessageId.value : ''
                 }));
                 ckeditor_instance.setData("");
                 replyBox.classList.add('hidden');

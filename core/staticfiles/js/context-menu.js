@@ -4,7 +4,8 @@ const contextMenu = document.querySelector('.wrapper'),
     replyTitle = replyBox.querySelector('#reply-title'),
     replyText = replyBox.querySelector('#reply-text'),
     replyMessageId = replyBox.querySelector('#reply-message-id'),
-    editor = document.getElementById('editor');
+    boxStatus = replyBox.querySelector('#box-status'),
+    replyCloseBtn = replyBox.querySelector('#reply-close-btn');
 let messageTarget;
 
 // Define icons for context menu items
@@ -133,6 +134,7 @@ contextMenu.addEventListener('click', e => {
     }
     if (contextMenuBtn('#context-menu-reply')) {
         replyMessageId.value = +messageTarget.id.replace('message-', '');
+        boxStatus.value = 'reply';
 
         replyBox.classList.remove('hidden');
         replyBox.classList.add('flex');
@@ -144,6 +146,32 @@ contextMenu.addEventListener('click', e => {
         }
         replyText.innerText = messageText.innerText;
 
-        editor.focus();
+        ckeditor_instance.focus();
+    }
+    if (contextMenuBtn('#context-menu-edit')) {
+        replyMessageId.value = +messageTarget.id.replace('message-', '');
+        boxStatus.value = 'edit';
+
+        replyBox.classList.remove('hidden');
+        replyBox.classList.add('flex');
+
+        replyTitle.innerText = 'Edit message';
+        replyText.innerText = messageText.innerText;
+
+        ckeditor_instance.setData(messageText.innerHTML);
+        ckeditor_instance.focus();
+        // Set the cursor to the end
+        ckeditor_instance.model.change(writer => {
+            const range = writer.createRange(
+                writer.createPositionAt(ckeditor_instance.model.document.getRoot(), 'end')
+            );
+            writer.setSelection(range);
+        });
     }
 });
+
+replyCloseBtn.addEventListener('click', () => {
+    if (boxStatus.value === 'edit') {
+        ckeditor_instance.setData("");
+    }
+})

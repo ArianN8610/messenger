@@ -62,6 +62,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender_id = data['sender_id']
         reply_id = data['reply']
+        edit_id = data['edit']
 
         # Convert HTML entities like &nbsp; to real spaces
         message = html.unescape(message).strip()
@@ -84,15 +85,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         chat = await sync_to_async(PrivateChat.objects.get)(id=self.chat_id)
         sender = await sync_to_async(User.objects.get)(id=sender_id)
-        if reply_id:
-            reply_message = await sync_to_async(Message.objects.get)(id=reply_id)
-        else:
-            reply_message = None
+        reply_message = await sync_to_async(Message.objects.get)(id=reply_id) if reply_id else None
 
-        # Save message in database
-        new_message = await sync_to_async(Message.objects.create)(
-            chat=chat, sender=sender, content=message, reply_to=reply_message
-        )
+        if edit_id:
+            # If the message is an edit, update the existing message
+            edit_message = await sync_to_async(Message.objects.select_related('sender', 'chat').get)(id=edit_id)
+
+            if (edit_message.sender.id == sender_id and edit_message.chat.id == int(self.chat_id) and
+                    edit_message.content != message):
+                edit_message.content = message
+                edit_message.edited_at = datetime.now()
+                await sync_to_async(edit_message.save)()
+        else:
+            # Save message in database
+            await sync_to_async(Message.objects.create)(
+                chat=chat, sender=sender, content=message, reply_to=reply_message
+            )
 
         # Send new message to the WebSocket group
         await self.channel_layer.group_send(
