@@ -78,11 +78,25 @@
                 {% if chat.other_user %}
                     <!-- Typing indicator -->
                     <div class="flex items-end gap-2" x-data>
-                        <div class="w-full" id="editor-container">
-                            <div class="w-full">
-                                <div @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"
-                                     class="max-h-48 !textarea !textarea-bordered break-words !py-0"
-                                     id="editor" x-ref="input"></div>
+                        <div class="flex flex-col w-full">
+                            <div id="reply-box" x-ref="replyBox" class="hidden mx-2 p-2 rounded-t-box justify-between bg-secondary-content items-center">
+                                <input id="reply-message-id" type="hidden">
+                                <div class="flex gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="opacity-50 size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>
+                                    <div>
+                                        <div id="reply-title" class="text-xs opacity-50 mb-1"></div>
+                                        <div id="reply-text" class="break-all line-clamp-1"></div>
+                                    </div>
+                                </div>
+                                <div class="btn btn-sm btn-circle btn-ghost"
+                                     @click="$refs.replyBox.classList.add('hidden')">✕</div>
+                            </div>
+                            <div class="w-full" id="editor-container">
+                                <div class="w-full">
+                                    <div @keydown.enter="if (!$event.shiftKey) { $event.preventDefault(); $refs.submit.click(); }"
+                                         class="max-h-48 !textarea !textarea-bordered break-words !py-0"
+                                         id="editor" x-ref="input"></div>
+                                </div>
                             </div>
                         </div>
                         <button class="btn" id="send-button" x-ref="submit">
@@ -120,6 +134,8 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/44.2.1/ckeditor5.umd.js" crossorigin></script>
     <script>
         const ckeditor_license_key = "{{ ckeditor_license_key }}";  // Send context variable to JS
+        const currentUserName = "{{ request.user.profile.get_full_name }}";
+        const otherUserName = "{{ chat.other_user.get_full_name }}";
     </script>
     <script src="{% static 'js/ckeditor.js' %}"></script>
     <script src="{% static 'js/private-chat.js' %}"></script>
@@ -218,9 +234,12 @@
                 chatSocket.send(JSON.stringify({
                     "type": "message",
                     "message": message,
-                    "sender_id": senderId
+                    "sender_id": senderId,
+                    "reply": replyMessageId.value && !replyBox.classList.contains('hidden') ? +replyMessageId.value : ''
                 }));
                 ckeditor_instance.setData("");
+                replyBox.classList.add('hidden');
+                replyBox.classList.remove('flex');
             }
         });
 

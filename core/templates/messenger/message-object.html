@@ -1,4 +1,4 @@
-{% load humanize messenger_tags %}
+{% load humanize general_tags messenger_tags %}
 
 {% if messages %}
     {% for message in messages reversed %}
@@ -34,6 +34,14 @@
                 </div>
             {% endif %}
             <div class="chat-bubble break-words">
+                {% if message.reply_to %}
+                    <div class="bg-base-content rounded-md p-1 mb-1 border-l-4">
+                        <div class="mb-1 text-sm font-bold opacity-50">
+                            {{ message.reply_to.sender.profile.get_full_name }}
+                        </div>
+                        <div class="break-all line-clamp-1">{{ message.reply_to.content|strip_tags }}</div>
+                    </div>
+                {% endif %}
                 <div dir="auto">{{ message.content|safe }}</div>
             </div>
             <div class="chat-footer opacity-50">

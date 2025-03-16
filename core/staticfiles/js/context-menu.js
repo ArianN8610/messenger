@@ -1,6 +1,10 @@
-// Select the context menu wrapper and messages box
 const contextMenu = document.querySelector('.wrapper'),
-    messagesBox = document.getElementById('messages-box');
+    messagesBox = document.getElementById('messages-box'),
+    replyBox = document.getElementById('reply-box'),
+    replyTitle = replyBox.querySelector('#reply-title'),
+    replyText = replyBox.querySelector('#reply-text'),
+    replyMessageId = replyBox.querySelector('#reply-message-id'),
+    editor = document.getElementById('editor');
 let messageTarget;
 
 // Define icons for context menu items
@@ -120,12 +124,26 @@ messagesBox.addEventListener('scroll', () => {
 });
 
 contextMenu.addEventListener('click', e => {
-    const copyBtn = e.target.closest('#context-menu-copy');
-    
-    if (copyBtn) {
-        const messageText = messageTarget.querySelector('div.chat-bubble');
+    const contextMenuBtn = element_id => e.target.closest(element_id);
+    const messageText = messageTarget.querySelector('div.chat-bubble div[dir="auto"]');
 
+    if (contextMenuBtn('#context-menu-copy')) {
         // Copy the text to clipboard
         copyFormattedText(messageText);
+    }
+    if (contextMenuBtn('#context-menu-reply')) {
+        replyMessageId.value = +messageTarget.id.replace('message-', '');
+
+        replyBox.classList.remove('hidden');
+        replyBox.classList.add('flex');
+
+        if (messageTarget.classList.contains('chat-end')) {
+            replyTitle.innerText = 'Reply to ' + currentUserName;
+        } else {
+            replyTitle.innerText = 'Reply to ' + otherUserName;
+        }
+        replyText.innerText = messageText.innerText;
+
+        editor.focus();
     }
 });

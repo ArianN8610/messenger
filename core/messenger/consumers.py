@@ -61,6 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Save message in the DB, and send it to the group"""
         message = data['message']
         sender_id = data['sender_id']
+        reply_id = data['reply']
 
         # Convert HTML entities like &nbsp; to real spaces
         message = html.unescape(message).strip()
@@ -83,10 +84,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         chat = await sync_to_async(PrivateChat.objects.get)(id=self.chat_id)
         sender = await sync_to_async(User.objects.get)(id=sender_id)
+        if reply_id:
+            reply_message = await sync_to_async(Message.objects.get)(id=reply_id)
+        else:
+            reply_message = None
 
         # Save message in database
         new_message = await sync_to_async(Message.objects.create)(
-            chat=chat, sender=sender, content=message
+            chat=chat, sender=sender, content=message, reply_to=reply_message
         )
 
         # Send new message to the WebSocket group
