@@ -45,7 +45,11 @@ function updateContextMenu(element) {
     // Define context menu items based on the class of the element
     let contextMenuItems;
     if (element.classList.contains('chat-end')) {
-        contextMenuItems = ['reply', 'edit', 'copy', 'forward', 'delete']
+        if (element.children[0].children[0].innerText.startsWith('Forwarded from')) {
+            contextMenuItems = ['reply', 'copy', 'forward', 'delete']
+        } else {
+            contextMenuItems = ['reply', 'edit', 'copy', 'forward', 'delete']
+        }
     } else {
         contextMenuItems = ['reply', 'copy', 'forward']
     }
@@ -53,7 +57,13 @@ function updateContextMenu(element) {
     // Generate HTML for context menu items
     let contextInnerHTML = ``;
     contextMenuItems.forEach(i => {
-        contextInnerHTML += `<li onclick=${i==='delete' ? "delete_message_modal.showModal()" : ""}>
+        let modal_btn_context = '';
+        if (i === 'delete') {
+            modal_btn_context = 'delete_message_modal.showModal()';
+        } else if (i === 'forward') {
+            modal_btn_context = 'forward_modal.showModal()';
+        }
+        contextInnerHTML += `<li onclick=${modal_btn_context}>
                 <a id="context-menu-${i}">
                     ${itemsIcon[i]}
                     <span>${toTitleCase(i)}</span>

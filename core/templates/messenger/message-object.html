@@ -26,10 +26,14 @@
         {% else %}
             class="chat chat-end"
         {% endif %}>
-            {% if message.edited_at %}
+            {% if message.edited_at or message.forward_from %}
                 <div class="chat-header {% if message.sender == chat.other_user.user %}pl-2{% else %}pr-2{% endif %}">
                     <div class="text-xs opacity-50">
-                        Edited {{ message.edited_at|get_message_time_display }}
+                        {% if message.forward_from %}
+                            Forwarded from {{ message.forward_from.username }}
+                        {% elif message.edited_at %}
+                            Edited {{ message.edited_at|get_message_time_display }}
+                        {% endif %}
                     </div>
                 </div>
             {% endif %}

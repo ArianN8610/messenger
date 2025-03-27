@@ -56,6 +56,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_seen(data)
             case 'delete':
                 await self.handle_delete_message(data)
+            case 'forward':
+                await self.handle_forward(data)
 
     async def handle_message(self, data):
         """Save message in the DB, and send it to the group"""
@@ -89,10 +91,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if edit_id:
             # If the message is an edit, update the existing message
-            edit_message = await sync_to_async(Message.objects.select_related('sender', 'chat').get)(id=edit_id)
+            edit_message = await sync_to_async(
+                Message.objects.select_related('sender', 'chat', 'forward_from').get
+            )(id=edit_id)
 
             if (edit_message.sender.id == sender_id and edit_message.chat.id == int(self.chat_id) and
-                    edit_message.content != message):
+                    edit_message.content != message and edit_message.forward_from is None):
                 edit_message.content = message
                 edit_message.edited_at = datetime.now()
                 await sync_to_async(edit_message.save)()
@@ -148,6 +152,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 "type": "broadcast",
                 "action": "delete",
+            }
+        )
+        await self.update_chat_list()
+
+    async def handle_forward(self, data):
+        """Forward a message to other chats"""
+        message_id = data['message_id']
+        user_id = data['user_id']
+        chats_id = data['chats']
+
+        message = await sync_to_async(
+            Message.objects.select_related('sender', 'chat', 'forward_from').get
+        )(id=message_id)
+        sender = await sync_to_async(User.objects.get)(id=user_id)
+        forward_sender = message.sender if not message.forward_from else message.forward_from
+
+        if message.chat.id == int(self.chat_id):
+            for chat_id in chats_id:
+                chat = await sync_to_async(PrivateChat.objects.get)(id=chat_id)
+
+                if (await sync_to_async(chat.has_user_view_permission)(sender) and
+                        await sync_to_async(chat.get_other_user)(sender) is not None):
+                    await sync_to_async(Message.objects.create)(
+                        chat=chat, sender=sender, content=message.content, forward_from=forward_sender
+                    )
+
+                    await self.channel_layer.group_send(
+                        f"private_chat_{chat_id}",
+                        {
+                            "type": "broadcast",
+                            "action": "forward",
+                        }
+                    )
+
+        await self.channel_layer.group_send(
+            self.chat_name,
+            {
+                "type": "broadcast",
+                "action": "forward",
             }
         )
         await self.update_chat_list()

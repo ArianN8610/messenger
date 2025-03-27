@@ -47,6 +47,7 @@ module.exports = {
             height: {
                 "menu": "calc(100vh - 6rem)",
                 "chat": "calc(100vh - 1rem)",
+                "forward": "calc(100vh - 16rem)",
             },
             width: {
                 "lg": "32rem",
