@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Profile
@@ -24,3 +24,14 @@ class ProfileCompleteView(LoginRequiredMixin, CreateView):
         profile_form.save()
 
         return super().form_valid(form)
+
+
+class UpdateProfileView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = ProfileCompleteForm
+    template_name = 'account/profile_complete.html'
+    success_url = '/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context | {'is_update': True}

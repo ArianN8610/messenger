@@ -1,4 +1,5 @@
 from django import forms
+from image_cropping import ImageCropWidget
 
 from .models import Profile
 
@@ -14,4 +15,7 @@ class ProfileCompleteForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        exclude = ('user',)
+        exclude = ('user', 'is_online', 'last_seen')
+        widgets = {
+            'avatar': ImageCropWidget
+        }

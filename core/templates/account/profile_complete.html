@@ -1,9 +1,25 @@
 {% extends 'account/base_auth.html' %}
 {% load general_tags %}
 
-{% block title %}Complete Profile{% endblock %}
+{% block head %}
+    {{ form.media }}
+{% endblock %}
 
-{% block form_title %}Complete Profile{% endblock %}
+{% block title %}
+    {% if is_update %}
+        Update Profile
+    {% else %}
+        Complete Profile
+    {% endif %}
+{% endblock %}
+
+{% block form_title %}
+    {% if is_update %}
+        Update Profile
+    {% else %}
+        Complete Profile
+    {% endif %}
+{% endblock %}
 
 {% block google_section %}{% endblock %}
 
@@ -11,6 +27,9 @@
 
 {% block form_content %}
     {% get_input form.avatar %}
+    {% if is_update %}
+        {% get_input form.cropping %}
+    {% endif %}
     {% get_input form.first_name %}
     {% get_input form.last_name %}
     {% get_input form.bio %}

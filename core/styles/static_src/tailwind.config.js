@@ -45,7 +45,7 @@ module.exports = {
     theme: {
         extend: {
             height: {
-                "menu": "calc(100vh - 6rem)",
+                "menu": "calc(100vh - 6rem - 1px)",
                 "chat": "calc(100vh - 1rem)",
                 "forward": "calc(100vh - 16rem)",
             },
