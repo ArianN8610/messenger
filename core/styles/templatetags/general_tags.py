@@ -17,8 +17,8 @@ def get_user_avatar(user_profile, avatar_styles=""):
 
 
 @register.inclusion_tag('utils/modal.html')
-def get_modal(modal_id, title, text):
-    context = {'modal_id': modal_id, 'title': title, 'text': text}
+def get_modal(modal_id, title, btn, text=''):
+    context = {'modal_id': modal_id, 'title': title, 'text': text, 'btn': btn}
     return context
 
 

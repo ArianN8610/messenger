@@ -127,6 +127,7 @@ class Message(models.Model):
     chat = models.ForeignKey(PrivateChat, on_delete=models.CASCADE, related_name='messages')
 
     content = models.TextField()
+    is_pin = models.BooleanField(default=False)
     reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
     forward_from = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='forwards')
 

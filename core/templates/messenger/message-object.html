@@ -9,7 +9,7 @@
 
         {% if forloop.first %}
             <div hx-trigger="intersect once" hx-target="#messages-box" hx-swap="afterbegin"
-                 hx-get="{{ chat.get_absolute_url }}?page={{ page_obj.number|add:1 }}"
+                 hx-get="{{ chat.get_absolute_url }}?page={{ page_obj.number|add:1 }}&pin={{ request.GET.pin }}"
                  class="text-center my-2 loading-box">
                 <div class="btn btn-circle no-animation btn-neutral">
                     <span class="loading loading-spinner loading-lg"></span>
@@ -53,6 +53,9 @@
                     Seen {{ message.seen_at|get_message_time_display }} -
                 {% endif %}
                 {{ message.sent_at|date:'H:i' }}
+                {% if message.is_pin %}
+                    | Pinned
+                {% endif %}
             </div>
         </div>
     {% endfor %}

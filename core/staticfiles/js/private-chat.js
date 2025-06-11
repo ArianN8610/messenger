@@ -13,7 +13,8 @@ document.body.addEventListener("htmx:afterSwap", (e) => {
     const triggeredElement = e.detail.elt;
 
     if (triggeredElement.id === "messages-box") {
-        const requestEvent = e.detail.requestConfig.triggeringEvent.type;
+        const triggeringEvent = e.detail.requestConfig?.triggeringEvent;
+        const requestEvent = triggeringEvent?.type;
 
         if (requestEvent === "intersect") {
             const newScrollHeight = chatBox.scrollHeight;
@@ -40,3 +41,24 @@ document.body.addEventListener("htmx:afterRequest", (e) => {
         triggeredElement.remove();
     }
 });
+
+// Display pinned messages
+document.getElementById("pin-checkbox").addEventListener('change', e => {
+    const messagesBox = document.getElementById("messages-box");
+    const baseUrl = messagesBox.getAttribute("data-base-url");
+
+    if (!baseUrl) return;
+
+    const newUrl = e.target.checked ? `${baseUrl}?pin=1` : baseUrl;
+    messagesBox.setAttribute("hx-get", newUrl);
+
+    // Force a new HTMX request without relying on hx-trigger
+    htmx.ajax('GET', newUrl, {
+        target: "#messages-box",
+        swap: "innerHTML"
+    });
+
+    setTimeout(() => {
+        messagesBox.scrollTo({ top: messagesBox.scrollHeight, behavior: 'smooth' });
+    }, 1000);
+})

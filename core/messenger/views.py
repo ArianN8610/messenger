@@ -99,6 +99,10 @@ class PrivateChatView(ListView):
     def get_queryset(self):
         messages = self.model.objects.filter(chat=self.kwargs['chat_id']).order_by("-sent_at")
 
+        # Get pinned messages
+        if self.request.GET.get('pin'):
+            messages = messages.filter(is_pin=True)
+
         # Add "new_day" field to specify the start of a new day
         prev_date = None
         for message in reversed(messages):

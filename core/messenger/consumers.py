@@ -58,6 +58,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_delete_message(data)
             case 'forward':
                 await self.handle_forward(data)
+            case 'pin':
+                await self.handle_pin(data)
 
     async def handle_message(self, data):
         """Save message in the DB, and send it to the group"""
@@ -136,6 +138,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
         await self.update_chat_list()
+
+    async def handle_pin(self, data):
+        """Pin messages"""
+        message_id = data['message_id']
+        user_id = data['user_id']
+
+        message = await sync_to_async(Message.objects.select_related('chat').get)(id=message_id)
+        user = await sync_to_async(User.objects.get)(id=user_id)
+
+        if await sync_to_async(message.chat.has_user_view_permission)(user):
+            message.is_pin = not message.is_pin
+            await sync_to_async(message.save)()
 
     async def handle_delete_message(self, data):
         """Delete specified message"""
